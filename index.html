@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor en Economía - Panel</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 🔹 CABECERA -->
+  <header>
+    <h1>Doctor en Economía</h1>
+    <p>Tu panel inteligente de análisis, inversiones y gastos</p>
+  </header>
+
+  <!-- 🔹 CUERPO PRINCIPAL -->
+  <main> 
+    
+<div class="acciones">
+  <button id="btnActualizar">🔄 Actualizar datos del mercado</button>
+</div>
+
+    <!-- Sección de Fondos Indexados -->
+    <section id="etfs">
+      <h2>Fondos Indexados / ETFs</h2>
+      <div id="etf-data">Cargando datos...</div>
+    </section>
+
+    <!-- Sección de Criptomonedas -->
+    <section id="crypto">
+      <h2>Criptomonedas Principales</h2>
+      <div id="crypto-data">Cargando datos...</div>
+    </section>
+
+    <!-- Sección de Tokens Nuevos -->
+    <section id="tokens">
+      <h2>Tokens Emergentes</h2>
+      <div id="tokens-data">Cargando datos...</div>
+    </section>
+
+<!-- Sección de Cartera -->
+<section id="cartera">
+  <h2>Distribución de Cartera</h2>
+  <canvas id="graficoCartera"></canvas>
+</section>
+
+    <!-- Sección de Gastos Diarios -->
+    <section id="gastos">
+      <h2>Gastos diarios</h2>
+      <div class="row">
+        <input id="gastoConcepto" placeholder="Concepto (ej. Bocadillo)" />
+        <input id="gastoMonto" type="number" step="0.01" placeholder="Monto (DKK)" />
+        <button id="btnAgregarGasto">Agregar</button>
+      </div>
+
+      <h3>Total mensual: <span id="gastoTotal">0</span> DKK</h3>
+      <ul id="listaGastos"></ul>
+    </section>
+
+    <!-- Sección de Notas e Intuiciones -->
+    <section id="notas">
+      <h2>Notas e Intuiciones</h2>
+      <textarea id="nota" placeholder="Escribe tus ideas o intuiciones aquí..."></textarea>
+      <button id="guardar">Guardar Nota</button>
+      <ul id="lista"></ul>
+    </section>
+
+  </main>
+
+  <!-- 🔹 PIE DE PÁGINA -->
+  <footer>
+    <p>© 2025 Doctor en Economía — Gerard Vasquez Suing</p>
+  </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Vinculamos el script -->
+  <script src="script.js"></script>
+</body>
+</html>

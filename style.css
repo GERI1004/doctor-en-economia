@@ -1,0 +1,164 @@
+/* ===== ESTILOS BASE ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* ===== CABECERA ===== */
+header {
+  background-color: #013220;
+  color: white;
+  text-align: center;
+  padding: 25px 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  font-size: 2rem;
+  margin-bottom: 5px;
+}
+
+header p {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+/* ===== SECCIONES PRINCIPALES ===== */
+main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  padding: 25px;
+}
+
+section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+section h2 {
+  color: #013220;
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 5px;
+}
+
+/* ===== GASTOS ===== */
+#gastos .row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+#gastos input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+#gastos button {
+  padding: 8px 14px;
+  background-color: #013220;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#gastos button:hover {
+  background-color: #025e38;
+}
+
+#gastoTotal {
+  font-weight: bold;
+}
+
+#listaGastos {
+  margin-top: 10px;
+  list-style: none;
+}
+
+#listaGastos li {
+  border-bottom: 1px solid #eee;
+  padding: 5px 0;
+}
+
+/* ===== NOTAS ===== */
+#notas textarea {
+  width: 100%;
+  height: 80px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 0.95rem;
+  resize: none;
+}
+
+#notas button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #013220;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#notas button:hover {
+  background-color: #025e38;
+}
+
+#lista {
+  margin-top: 10px;
+  list-style: none;
+}
+
+#lista li {
+  border-bottom: 1px solid #eee;
+  padding: 5px 0;
+}
+
+/* ===== PIE DE PÁGINA ===== */
+footer {
+  background-color: #013220;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  margin-top: 20px;
+}
+.acciones {
+  text-align: center;
+  margin: 15px 0;
+}
+
+.acciones button {
+  background-color: #0fa958;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.acciones button:hover {
+  background-color: #0c7d45;
+}
