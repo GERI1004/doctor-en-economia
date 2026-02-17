@@ -1,81 +1,165 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Doctor en Economía - Panel</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor en Economía</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
+  <!-- LOGIN SCREEN -->
+  <section id="loginSection">
+    <div class="login-container">
+      <h2 id="formTitle">Sign in to Doctor en Economía</h2>
 
-  <!-- 🔹 CABECERA -->
-  <header>
-    <h1>Doctor en Economía</h1>
-    <p>Tu panel inteligente de análisis, inversiones y gastos</p>
-  </header>
-
-  <!-- 🔹 CUERPO PRINCIPAL -->
-  <main> 
-    
-<div class="acciones">
-  <button id="btnActualizar">🔄 Actualizar datos del mercado</button>
-</div>
-
-    <!-- Sección de Fondos Indexados -->
-    <section id="etfs">
-      <h2>Fondos Indexados / ETFs</h2>
-      <div id="etf-data">Cargando datos...</div>
-    </section>
-
-    <!-- Sección de Criptomonedas -->
-    <section id="crypto">
-      <h2>Criptomonedas Principales</h2>
-      <div id="crypto-data">Cargando datos...</div>
-    </section>
-
-    <!-- Sección de Tokens Nuevos -->
-    <section id="tokens">
-      <h2>Tokens Emergentes</h2>
-      <div id="tokens-data">Cargando datos...</div>
-    </section>
-
-<!-- Sección de Cartera -->
-<section id="cartera">
-  <h2>Distribución de Cartera</h2>
-  <canvas id="graficoCartera"></canvas>
-</section>
-
-    <!-- Sección de Gastos Diarios -->
-    <section id="gastos">
-      <h2>Gastos diarios</h2>
-      <div class="row">
-        <input id="gastoConcepto" placeholder="Concepto (ej. Bocadillo)" />
-        <input id="gastoMonto" type="number" step="0.01" placeholder="Monto (DKK)" />
-        <button id="btnAgregarGasto">Agregar</button>
+      <div class="login-box">
+        <input type="email" id="emailInput" placeholder="Email" required>
+        <input type="password" id="passwordInput" placeholder="Password" required>
+        <input type="text" id="nameInput" placeholder="Full Name (only for new accounts)" class="hidden">
+        <button id="actionBtn">Login</button>
+        <p id="toggleMode" class="toggle-link">Don’t have an account? Create one</p>
       </div>
 
-      <h3>Total mensual: <span id="gastoTotal">0</span> DKK</h3>
-      <ul id="listaGastos"></ul>
+      <p id="loginStatus" class="status-text"></p>
+    </div>
+  </section>
+
+  <header>
+    <h1>Doctor en Economía 💼</h1>
+    <p>Your personal finance dashboard</p>
+  </header>
+
+  <main>
+    <!-- Current Time and Payroll Info -->
+    <section id="context">
+      <h2>🕒 Current Context</h2>
+      <div class="context-box">
+        <p><strong>📆 Date:</strong> <span id="currentDate">Loading...</span></p>
+        <p><strong>🕐 Time:</strong> <span id="currentTime">Loading...</span></p>
+        <p><strong>💼 Payroll:</strong> You get paid every <span id="paydayDisplay">30</span>th of each month</p>
+        <p><strong>⏳ Days until next payday:</strong> <span id="daysToPayday">0</span></p>
+      </div>
     </section>
 
-    <!-- Sección de Notas e Intuiciones -->
-    <section id="notas">
-      <h2>Notas e Intuiciones</h2>
-      <textarea id="nota" placeholder="Escribe tus ideas o intuiciones aquí..."></textarea>
-      <button id="guardar">Guardar Nota</button>
-      <ul id="lista"></ul>
+    <!-- Real-Time Market Data -->
+    <section id="market">
+      <h2>📈 Market Overview</h2>
+      <div class="market-grid">
+        <div class="market-box" id="crypto"></div>
+        <div class="market-box" id="etfs"></div>
+        <div class="market-box" id="sp500"></div>
+      </div>
     </section>
 
+    <!-- Expense Tracker -->
+    <section id="expenses">
+      <h2>💸 Expense Tracker</h2>
+      <input type="text" id="expenseDesc" placeholder="Description">
+      <input type="number" id="expenseAmount" placeholder="Amount (DKK)">
+      <button id="addExpense">Add Expense</button>
+      <ul id="expenseList"></ul>
+      <h3>Total: <span id="total">0</span> DKK</h3>
+    </section>
+
+    <!-- Portfolio Chart -->
+    <section id="portfolio">
+      <h2>🥧 Portfolio Distribution</h2>
+      <canvas id="portfolioChart" width="400" height="400"></canvas>
+    </section>
+
+    <!-- Notes -->
+    <section id="notes">
+      <h2>🧾 Notes</h2>
+      <textarea id="noteText" placeholder="Write your thoughts..."></textarea>
+      <button id="saveNote">Save Note</button>
+      <div id="savedNotes"></div>
+    </section>
+
+    <!-- Balance and Monthly Summary -->
+    <section id="balance">
+      <h2>💰 Real Balance</h2>
+      <div class="balance-container">
+        <div>
+          <label for="income">💵 Add Income:</label>
+          <input type="number" id="income" placeholder="Amount (DKK)">
+          <button id="addIncome">Add</button>
+        </div>
+        <div class="balance-info">
+          <p>Total Income: <strong><span id="totalIncome">0</span> DKK</strong></p>
+          <p>Total Expenses: <strong><span id="totalExpenses">0</span> DKK</strong></p>
+          <h3>💎 Current Balance: <span id="currentBalance">0</span> DKK</h3>
+        </div>
+      </div>
+      <h3>📊 Monthly Overview</h3>
+      <canvas id="expensesChart" width="400" height="250"></canvas>
+    </section>
+
+    <!-- Smart Summary -->
+    <section id="summary">
+      <h2>🧠 Smart Summary</h2>
+      <div class="summary-box" id="smartSummary">
+        <p>Loading personalized analysis...</p>
+      </div>
+    </section>
+
+    <!-- Real-Time Market News -->
+    <section id="news">
+      <h2>📰 Market News</h2>
+      <p>Stay informed with the latest updates about your tracked assets.</p>
+      <button id="loadNews">🔄 Refresh News</button>
+      <div id="newsFeed">
+        <p>Loading market news...</p>
+      </div>
+    </section>
+
+    <!-- Monthly History -->
+    <section id="history">
+      <h2>📅 Monthly History</h2>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Income (DKK)</th>
+            <th>Expenses (DKK)</th>
+            <th>Balance (DKK)</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <button id="saveMonth">💾 Save Current Month</button>
+    </section>
+
+    <button id="exportCSV">📤 Export to Excel (CSV)</button>
   </main>
 
-  <!-- 🔹 PIE DE PÁGINA -->
   <footer>
-    <p>© 2025 Doctor en Economía — Gerard Vasquez Suing</p>
+    <p>© 2025 Doctor en Economía – Created by Gerard Vasquez Suing</p>
   </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- Vinculamos el script -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDpmcmyyjd2lvLRdXlsFHaW3rSFJrna1JU",
+      authDomain: "doctoreneconomia.firebaseapp.com",
+      projectId: "doctoreneconomia",
+      storageBucket: "doctoreneconomia.firebasestorage.app",
+      messagingSenderId: "500183932849",
+      appId: "1:500183932849:web:bb1d4b25bc972aa0a22790",
+      measurementId: "G-QDFDHRRGJP"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    console.log("✅ Firebase conectado correctamente");
+  </script>
+
   <script src="script.js"></script>
 </body>
 </html>

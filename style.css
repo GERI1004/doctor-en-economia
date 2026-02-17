@@ -1,164 +1,505 @@
-/* ===== ESTILOS BASE ===== */
+/* ================================ 
+   🌍 Doctor en Economía - STYLE
+   ================================ */
+
+/* 🔒 Hide app until login */
+main, header, footer, #context, #market, #expenses, 
+#portfolio, #notes, #balance, #summary, #news, #history, #exportCSV {
+  display: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ================================
+   RESET Y FUENTES
+   ================================ */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f4f6f8;
-  color: #333;
-  line-height: 1.5;
+html, body {
+  width: 100%;
+  height: 100%;
 }
 
-/* ===== CABECERA ===== */
-header {
-  background-color: #013220;
-  color: white;
+body { 
+  background-color: #0e1117;
+  color: #e6e6e6;
+  line-height: 1.6;
+  padding-bottom: 60px;
+}
+
+/* ================================
+   LOGIN FULLSCREEN
+   ================================ */
+
+#loginSection {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, #0a1e12 0%, #000 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#loginSection.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.login-container {
+  width: min(90vw, 720px);
+  padding: 48px 40px;
+  background: rgba(17, 17, 17, .95);
+  border: 1px solid #00d08480;
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(0, 208, 132, .4);
   text-align: center;
-  padding: 25px 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  color: #fff;
+}
+
+#formTitle {
+  font-size: clamp(1.6rem, 2.5vw, 2.2rem);
+  color: #00d084;
+  margin-bottom: 22px;
+}
+
+.login-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-box input {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #00d08470;
+  background-color: #111;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.3s;
+}
+
+.login-box input:focus {
+  border-color: #00d084;
+}
+
+.login-box button {
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  background-color: #00d084;
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.login-box button:hover {
+  background-color: #00ffae;
+}
+
+.toggle-link {
+  color: #00d084;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.status-text {
+  margin-top: 15px;
+  font-size: 0.9em;
+  color: #ffd700;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================================
+   HEADER
+   ================================ */
+header {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(90deg, #003300, #001f3f);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 header h1 {
-  font-size: 2rem;
-  margin-bottom: 5px;
+  font-size: 2.5rem;
+  letter-spacing: 1px;
 }
 
 header p {
-  font-size: 1rem;
-  opacity: 0.9;
+  font-size: 1.1rem;
+  opacity: 0.85;
 }
 
-/* ===== SECCIONES PRINCIPALES ===== */
+/* ================================
+   SECCIONES
+   ================================ */
 main {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 20px;
-  padding: 25px;
-}
-
-section {
-  background-color: white;
-  border-radius: 10px;
-  padding: 18px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  width: 90%;
+  max-width: 1000px;
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
 }
 
 section h2 {
-  color: #013220;
-  font-size: 1.3rem;
-  margin-bottom: 12px;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 5px;
+  font-size: 1.6rem;
+  margin-bottom: 15px;
+  color: #00d084;
 }
 
-/* ===== GASTOS ===== */
-#gastos .row {
+/* ================================
+   MARKET DATA
+   ================================ */
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.market-box {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(0, 208, 132, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.market-box:hover {
+  transform: translateY(-5px);
+}
+
+/* ================================
+   EXPENSE TRACKER
+   ================================ */
+#expenses input,
+#expenses button {
+  padding: 10px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+#expenses input {
+  background: #1b1f2a;
+  color: white;
+  border: 1px solid #333;
+}
+
+#expenses button {
+  background-color: #00d084;
+  color: #0e1117;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+#expenses button:hover {
+  background-color: #00a76b;
+}
+
+#expenseList {
+  list-style: none;
+  margin-top: 15px;
+}
+
+#expenseList li {
+  background: #161b22;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border-left: 4px solid #00d084;
+}
+
+/* Botón eliminar gasto (si lo añades en el futuro) */
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  font-size: 1rem;
+  cursor: pointer;
+  float: right;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  color: #ff7b7b;
+}
+
+/* PORTFOLIO CHART */
+#portfolio {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+#portfolio canvas {
+  max-width: 280px;
+  max-height: 280px;
+  margin: 0 auto;
+  display: block;
+  background: #0d1117;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #00d08430;
+}
+
+/* ================================
+   NOTES SECTION
+   ================================ */
+#notes textarea {
+  width: 100%;
+  height: 120px;
+  background: #1b1f2a;
+  color: #e6e6e6;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+  resize: none;
+  font-size: 1rem;
+}
+
+#notes button {
+  background-color: #00d084;
+  color: #0e1117;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+#notes button:hover {
+  background-color: #00a76b;
+}
+
+#savedNotes {
+  margin-top: 15px;
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  flex-wrap: wrap;
+}
+
+.note {
+  background: #161b22;
+  padding: 10px;
+  border-left: 4px solid #00d084;
+  border-radius: 8px;
+}
+
+/* ================================
+   BALANCE SECTION
+   ================================ */
+#balance {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.balance-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.balance-info {
+  background: #1b1f2a;
+  border-radius: 10px;
+  padding: 15px;
+  line-height: 1.8;
+  border-left: 4px solid #00d084;
+}
+
+#income {
+  padding: 8px;
+  background: #1b1f2a;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 6px;
+}
+
+#addIncome {
+  padding: 8px 12px;
+  background: #00d084;
+  color: #0e1117;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#addIncome:hover {
+  background: #00a76b;
+}
+
+/* CONTEXT SECTION */
+#context {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.context-box {
+  background: #1b1f2a;
+  border-radius: 10px;
+  padding: 15px;
+  line-height: 1.8;
+  border-left: 4px solid #00d084;
+}
+
+/* SMART SUMMARY */
+#summary {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+.summary-box {
+  background: #1b1f2a;
+  border-radius: 10px;
+  padding: 15px;
+  line-height: 1.8;
+  border-left: 4px solid #00d084;
+  font-size: 1rem;
+  color: #e0e0e0;
+}
+
+/* HISTORY SECTION */
+#history {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+#historyTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  color: #e0e0e0;
+}
+
+#historyTable th,
+#historyTable td {
+  border: 1px solid #00d08430;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+#historyTable th {
+  background-color: #00d08420;
+  color: #00d084;
+}
+
+#saveMonth {
+  background: #00d084;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.3s;
+}
+
+#saveMonth:hover {
+  background: #00ffae;
+}
+
+/* MARKET NEWS */
+#news {
+  background: #161b22;
+  border: 1px solid #00d08440;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 30px;
+}
+
+#loadNews {
+  background: #00d084;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: bold;
+  cursor: pointer;
   margin-bottom: 10px;
 }
 
-#gastos input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 0.95rem;
+#loadNews:hover {
+  background: #00ffae;
 }
 
-#gastos button {
-  padding: 8px 14px;
-  background-color: #013220;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-#gastos button:hover {
-  background-color: #025e38;
-}
-
-#gastoTotal {
-  font-weight: bold;
-}
-
-#listaGastos {
-  margin-top: 10px;
-  list-style: none;
-}
-
-#listaGastos li {
-  border-bottom: 1px solid #eee;
-  padding: 5px 0;
-}
-
-/* ===== NOTAS ===== */
-#notas textarea {
-  width: 100%;
-  height: 80px;
+.news-item {
+  background: #1b1f2a;
+  border-left: 4px solid #00d084;
+  padding: 12px;
+  margin-bottom: 12px;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  padding: 10px;
-  font-size: 0.95rem;
-  resize: none;
 }
 
-#notas button {
-  margin-top: 10px;
-  padding: 8px 16px;
-  background-color: #013220;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
+.news-item h3 {
+  font-size: 1rem;
+  color: #fff;
+  margin-bottom: 6px;
 }
 
-#notas button:hover {
-  background-color: #025e38;
+.news-item .date {
+  color: #aaa;
+  font-size: 0.8rem;
 }
 
-#lista {
-  margin-top: 10px;
-  list-style: none;
-}
-
-#lista li {
-  border-bottom: 1px solid #eee;
-  padding: 5px 0;
-}
-
-/* ===== PIE DE PÁGINA ===== */
+/* ================================
+   FOOTER
+   ================================ */
 footer {
-  background-color: #013220;
-  color: white;
   text-align: center;
-  padding: 10px 0;
+  padding: 20px;
+  background: #0a0d12;
+  color: #aaa;
   font-size: 0.9rem;
-  margin-top: 20px;
-}
-.acciones {
-  text-align: center;
-  margin: 15px 0;
+  margin-top: 50px;
+  border-top: 1px solid #00d08420;
 }
 
-.acciones button {
-  background-color: #0fa958;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.acciones button:hover {
-  background-color: #0c7d45;
+/* ================================
+   RESPONSIVE
+   ================================ */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 2rem;
+  }
+  section h2 {
+    font-size: 1.4rem;
+  }
 }

@@ -82,7 +82,7 @@ This web app is part of my personal learning path, and I’ll keep improving it 
 
 ## 📬 Contact
 
-- ✉️ **Email:** [maikgerard4@gmail.com](mailto:maikgerard4@gmail.com)  
+- ✉️ **Email:** [gerard.startups@gmail.com](mailto:gerard.startups@gmail.com)  
 - 🌐 **GitHub:** [github.com/GERI1004](https://github.com/GERI1004)  
 - 🚧 *Work in progress – continuously updated*
 
