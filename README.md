@@ -1,88 +1,210 @@
 # 🌍 Doctor en Economía
 
-**Doctor en Economía** is a personal project that I started after becoming interested in the world of economy and investments.  
-I wanted to stay updated at all times about new **token contracts**, market movements and, at the same time, have a place to **track my personal expenses and savings**.
-
-That idea led me to build this project — a website where I can monitor **everything in one place**, in real time, and learn more about **finance, data visualization and web development** while creating something useful.
+**Doctor en Economía** es una aplicación web de finanzas personales orientada a personas sin formación financiera previa. El objetivo es ayudar al usuario a entender en qué gasta su dinero, controlar su balance mensual y dar los primeros pasos hacia el ahorro y la inversión responsable.
 
 ---
 
-## 🧠 Project Overview
+## 🧠 Descripción del proyecto
 
-This web app allows you to:
+La aplicación permite al usuario:
 
-- 📊 **See real-time market data** from:
-  - Major cryptocurrencies (Bitcoin, Ethereum, Solana…)
-  - Emerging tokens (Pepe, Bonk, Floki…)
-  - ETFs and the S&P 500 (demo or live data, depending on the API)
-
-- 💸 **Register daily expenses** and calculate your monthly total automatically.
-
-- 💰 *(Coming soon)* display your **real balance** and analyze where your money goes.
-
-- 🧾 **Write down financial notes or personal insights** (saved locally in the browser).
-
-- 🥧 **Visualize your portfolio** distribution (65 % / 20 % / 15 %) with a dynamic Chart.js donut chart.
-
-- 🔄 **Auto-refresh every 5 minutes** or refresh manually with one click.
+- 🔐 **Registrarse e iniciar sesión** con correo y contraseña (Firebase Auth)
+- 💸 **Registrar y eliminar gastos diarios**, sincronizados en la nube
+- 💰 **Añadir ingresos mensuales**, también guardados en la nube
+- 💎 **Ver el balance real** (ingresos − gastos) actualizado automáticamente
+- 🥧 **Visualizar la distribución del presupuesto** mediante un gráfico donut (gastos vs ahorro)
+- 📊 **Ver los gastos agrupados por mes** en un gráfico de barras
+- 🧾 **Guardar notas personales** sobre finanzas
+- 📈 **Consultar precios en tiempo real** de criptomonedas y ETFs mediante APIs externas
+- 📰 **Leer noticias del mercado financiero**
+- 📅 **Guardar el historial mensual** y exportarlo a CSV
+- 🧠 **Recibir un resumen inteligente** con consejos financieros adaptados al estado del usuario
 
 ---
 
-## ⚙️ Tech Stack
+## ⚙️ Tecnologías utilizadas
 
-- **HTML5 / CSS3 / JavaScript**
-- **Chart.js** for charts and data visualization  
-- **CoinGecko API** for crypto and tokens  
-- **Public finance APIs** (Yahoo Finance, TwelveData or FMP)  
-- **LocalStorage** for saving notes and expenses locally  
-- **Live Server** for running the project
-
----
-
-## 🚀 How to Use
-
-1. Clone or download this repository.  
-2. Open the folder in **Visual Studio Code**.  
-3. Install the **Live Server** extension (if you don’t have it).  
-4. Right-click `index.html` → **Open with Live Server**.  
-5. Wait a few seconds for the market data to load.
+- **HTML5 / CSS3 / JavaScript** — sin frameworks
+- **Firebase Auth** — autenticación de usuarios
+- **Firebase Firestore** — base de datos en la nube
+- **Chart.js** — gráficos de barras y donut
+- **CoinGecko API** — precios de criptomonedas
+- **TwelveData API** — precios de ETFs e índices bursátiles
+- **NewsData.io API** — noticias del mercado financiero
+- **localStorage** — almacenamiento local para notas, historial mensual y configuración
 
 ---
 
-## 📈 Portfolio Distribution (example)
+## 🚀 Cómo ejecutar el proyecto
 
-| Asset Type | Percentage | Description |
-|-------------|-------------|-------------|
-| Index funds / ETFs | 65 % | Stable investment base |
-| Main cryptocurrencies | 20 % | Medium-risk growth assets |
-| Emerging tokens | 15 % | High-volatility, high-potential |
-
----
-
-## 💡 Project Vision
-
-My goal is to make this project a personal financial dashboard that helps me:
-
-- See my **real available balance**  
-- Understand **where my money goes**  
-- Use that information to **make smarter financial decisions**
-
-Each new feature I add brings me closer to this goal.
+1. Clona o descarga este repositorio.
+2. Abre la carpeta en **Visual Studio Code**.
+3. Instala la extensión **Live Server** (si no la tienes).
+4. Haz clic derecho en `index.html` → **Open with Live Server**.
+5. Espera unos segundos a que se carguen los datos de mercado.
 
 ---
 
-## 👨‍💻 About Me
+## 📁 Estructura del proyecto
 
-Hi! 👋 My name is **Gerard Vasquez Suing**.  
-I’m a student of **Multiplatform Application Development (DAM)** and currently living in **Denmark**.  
-I’m still learning, but I love building real projects that combine **programming and economy**.  
-This web app is part of my personal learning path, and I’ll keep improving it step by step.
+```
+doctor-en-economia/
+├── index.html      — Estructura HTML de la aplicación
+├── style.css       — Estilos visuales
+├── script.js       — Lógica JavaScript completa
+├── README.md       — Documentación del proyecto
+└── TESTS.md        — Pruebas manuales realizadas
+```
 
 ---
 
-## 📬 Contact
+## 🔧 DECISIONES TÉCNICAS
 
-- ✉️ **Email:** [gerard.startups@gmail.com](mailto:gerard.startups@gmail.com)  
-- 🌐 **GitHub:** [github.com/GERI1004](https://github.com/GERI1004)  
-- 🚧 *Work in progress – continuously updated*
+### ¿Por qué Firebase?
 
+Al empezar el proyecto necesitaba una forma de guardar los datos del usuario de manera que no se perdieran al cerrar el navegador y que funcionaran desde cualquier dispositivo. Las opciones principales eran crear un backend propio (por ejemplo con Node.js) o usar un servicio que ya lo gestionara.
+
+Elegí Firebase por varias razones:
+
+- **Autenticación lista para usar.** Firebase Auth permite crear un sistema de login y registro completo sin tener que programar la gestión de contraseñas, sesiones ni tokens desde cero.
+- **Base de datos en la nube.** Firestore guarda y sincroniza los datos automáticamente. Cuando el usuario añade un gasto, queda guardado al instante.
+- **Gratuito para proyectos pequeños.** El nivel gratuito de Firebase cubre perfectamente las necesidades de este proyecto.
+- **Sin necesidad de servidor propio.** Firebase actúa como backend gestionado (BaaS — Backend as a Service).
+
+La desventaja es que las claves de las APIs externas son visibles en el código cliente. En un proyecto de producción esto se resolvería con un backend intermedio.
+
+---
+
+### ¿Por qué una SPA (Single Page Application)?
+
+La aplicación está construida en un único archivo HTML con todas las secciones cargadas desde el principio. La navegación consiste en mostrar u ocultar secciones según el estado del usuario.
+
+Motivos:
+
+- **Simplicidad técnica.** Al trabajar con HTML, CSS y JavaScript puro, sin frameworks ni herramientas de compilación, una SPA es la solución más directa.
+- **Coherencia con el stack.** No hay que gestionar rutas ni comunicación entre páginas distintas.
+- **Experiencia de usuario más fluida.** Al no recargar la página, la app responde más rápido y se comporta como una aplicación real.
+
+La limitación principal es que la URL no cambia al navegar entre secciones y el botón de "atrás" del navegador no tiene el comportamiento esperado en una app multipágina.
+
+---
+
+### ¿Por qué localStorage en algunas partes?
+
+El proyecto usa Firestore para los datos críticos (gastos e ingresos) y localStorage para datos secundarios (notas, historial mensual y día de cobro).
+
+- **Las notas son personales y locales.** No es necesario que sincronicen entre dispositivos.
+- **El historial mensual es un resumen calculado**, no una entidad de base de datos. Guardarlo en localStorage es suficiente.
+- **El día de cobro es una preferencia de configuración** que no cambia con frecuencia.
+- **localStorage actúa como caché.** Al cargar los gastos desde Firestore, se guardan también en localStorage para que los gráficos puedan acceder a ellos de forma inmediata.
+
+---
+
+## ⚠️ DIFICULTADES ENCONTRADAS
+
+### Error de inicialización: variable no disponible al arrancar (TDZ)
+
+Uno de los errores más difíciles de identificar fue una regresión que impidió que la app arrancara después de añadir el gráfico de portfolio.
+
+La variable `portfolioChartInstance` estaba declarada con `let` más abajo en el archivo que la función que la usaba. En JavaScript, las variables declaradas con `let` no pueden usarse antes de que su declaración sea evaluada (Temporal Dead Zone). Si el usuario tenía ingresos en localStorage, el script intentaba acceder a la variable antes de que existiera y se detenía por completo.
+
+La solución fue mover la declaración de `portfolioChartInstance` al principio del archivo, antes de la primera llamada a la función que la necesitaba.
+
+---
+
+### Pérdida de datos de ingresos al recargar la página
+
+Al añadir la funcionalidad de guardar los ingresos en Firestore, se introdujo un error de lógica: cada vez que el usuario iniciaba sesión, el código cargaba los ingresos desde Firestore y sobreescribía localStorage. Si el usuario tenía ingresos guardados solo en localStorage (antes de que se implementara Firebase para ingresos), al recargar se ponían a cero.
+
+La solución fue añadir una condición: solo se actualiza localStorage con los datos de Firestore si la colección de ingresos en Firestore no está vacía.
+
+---
+
+### Error silencioso con Chart.js al actualizar los gráficos
+
+Cuando `updateExpensesChart()` se llamaba varias veces seguidas, Chart.js lanzaba un error porque intentaba crear un nuevo gráfico sobre un canvas que ya tenía uno activo. El error no bloqueaba la app pero el gráfico dejaba de actualizarse correctamente.
+
+La solución fue guardar la instancia del gráfico en una variable y destruirla antes de crear una nueva cada vez que se actualiza.
+
+---
+
+### Funcionalidades en HTML sin lógica en JavaScript
+
+La sección de notas existía en el HTML con su textarea y su botón, y tenía estilos en el CSS, pero no había ninguna línea de JavaScript que guardara o mostrara notas. El usuario podía escribir y pulsar guardar, pero al recargar no quedaba nada.
+
+Se resolvió añadiendo la lógica completa de notas con localStorage.
+
+---
+
+### API keys expuestas en el código cliente
+
+Las claves de TwelveData y NewsData.io están escritas directamente en el archivo JavaScript, visible para cualquiera que abra las herramientas de desarrollador del navegador.
+
+La solución correcta sería un backend propio que hiciera las llamadas a las APIs. En este proyecto no se ha podido resolver completamente por las limitaciones del stack elegido (sin servidor).
+
+---
+
+## ✅ CONCLUSIONES
+
+### Qué he aprendido
+
+- **Cómo funciona la autenticación real.** Entender cómo Firebase gestiona sesiones, cómo persiste el estado del usuario entre recargas y cómo se protege el acceso mediante el UID.
+- **Diferencia entre código síncrono y asíncrono.** Aprendí a usar `async/await` de forma real al trabajar con llamadas a Firestore y a APIs externas.
+- **Cómo el orden del código importa.** El error de la Temporal Dead Zone enseñó que JavaScript ejecuta el código de arriba abajo y que declarar una variable en el sitio equivocado puede romper toda la aplicación de forma silenciosa.
+- **Cómo depurar errores reales.** Gran parte del desarrollo fue identificar por qué algo no funcionaba, leer el error en la consola, entender la causa y aplicar un fix concreto.
+- **Que las decisiones de arquitectura tienen consecuencias.** Mezclar Firestore y localStorage para distintas partes de los datos creó problemas de sincronización que no habrían existido con un único sistema desde el principio.
+
+---
+
+### Qué haría diferente si empezara de nuevo
+
+- **Usaría un solo sistema de almacenamiento.** Todo en Firestore desde el primer momento, sin depender de localStorage para datos que deberían sincronizarse.
+- **Dividiría el JavaScript en varios archivos desde el principio.** Un archivo por módulo (Firebase, gastos, gráficos, etc.) en lugar de más de 700 líneas en un único archivo.
+- **Implementaría el CRUD completo desde el principio.** La operación Update (modificar un dato ya guardado) debería haberse incluido desde el inicio.
+- **Plantearía la seguridad desde el diseño.** Las API keys expuestas son difíciles de resolver cuando la arquitectura ya está construida sin backend propio.
+
+---
+
+## 🚀 MEJORAS FUTURAS
+
+### Formulario inicial de usuario
+Al registrarse por primera vez, el usuario respondería preguntas sobre su situación financiera: ingresos, tipo de gastos habituales, objetivos de ahorro. Con esas respuestas, la app personalizaría los mensajes del resumen inteligente.
+
+### Chatbot de orientación financiera
+Un asistente dentro de la app con respuestas predefinidas según el estado financiero del usuario. No sería un chatbot libre, sino guiado: "¿cuánto debería ahorrar este mes?", "¿qué es un ETF?".
+
+### Backend propio
+Sustituir Firebase por un servidor propio con Node.js y Express. Esto permitiría gestionar las llamadas a las APIs externas desde el servidor (resolviendo el problema de las claves expuestas) y añadir validaciones del lado del servidor.
+
+### Mayor seguridad
+- Mover las claves de las APIs a variables de entorno en un servidor
+- Configurar reglas de Firestore más estrictas con validación de formato
+- Añadir límite de intentos de login
+
+### Personalización
+- Opción de cambiar la divisa (actualmente todo es DKK)
+- Categorías de gastos (alimentación, transporte, ocio) con desglose visual
+- Modo claro / modo oscuro
+
+---
+
+## 📚 BIBLIOGRAFÍA Y FUENTES
+
+| Recurso | Uso en el proyecto |
+|---|---|
+| [Firebase Documentation](https://firebase.google.com/docs) | Autenticación de usuarios y base de datos Firestore |
+| [Chart.js Documentation](https://www.chartjs.org/docs/) | Gráfico de barras mensual y gráfico donut de presupuesto |
+| [CoinGecko API](https://www.coingecko.com/en/api/documentation) | Precios y variación en 24h de criptomonedas |
+| [TwelveData API](https://twelvedata.com/docs) | Precios de ETFs e índices bursátiles |
+| [NewsData.io API](https://newsdata.io/documentation) | Noticias del mercado financiero |
+| [MDN Web Docs](https://developer.mozilla.org/) | `fetch`, `localStorage`, manipulación del DOM, `async/await` |
+| [Google Fonts — Poppins](https://fonts.google.com/specimen/Poppins) | Tipografía del proyecto |
+
+---
+
+## 👨‍💻 Autor
+
+**Gerard Vasquez Suing**
+Estudiante de Desarrollo de Aplicaciones Multiplataforma (DAM) — CESUR
+📧 gerard.startups@gmail.com
+🌐 [github.com/GERI1004](https://github.com/GERI1004)
