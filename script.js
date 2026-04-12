@@ -19,17 +19,9 @@ async function getCryptoData() {
   const ids = [
     "bitcoin",
     "ethereum",
-    "chainlink",
-    "singularitynet",
-    "fetch-ai",
-    "ocean-protocol",
-    "render-token",
-    "akash-network",
-    "peaq-network",
-    "golem",
-    "oraichain-token",
-    "numeraire",
-    "singularitydao"
+    "solana",
+    "cardano",
+    "binancecoin"
   ];
 
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(
@@ -41,7 +33,7 @@ async function getCryptoData() {
     const data = await response.json();
 
     cryptoDiv.innerHTML = `
-      <h3>Cryptos & AI Tokens</h3>
+      <h3>Criptomonedas principales</h3>
       ${Object.entries(data)
         .map(([key, value]) => {
           const change = value.usd_24h_change;
@@ -54,17 +46,17 @@ async function getCryptoData() {
             USD ${value.usd.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
-            })} 
+            })}
             <span style="color:${color}">${symbol} ${change.toFixed(2)}%</span></p>
           `;
         })
         .join("")}
-      <p class="update-time">Updated: ${new Date().toLocaleTimeString()}</p>
+      <p class="update-time">Actualizado: ${new Date().toLocaleTimeString()}</p>
     `;
   } catch (error) {
     console.error("Error fetching crypto data:", error);
     cryptoDiv.innerHTML =
-      "<p>⚠️ Error loading crypto data. Please try again later.</p>";
+      "<p>⚠️ Error al cargar los datos. Inténtalo de nuevo más tarde.</p>";
   }
 }
 
@@ -98,7 +90,7 @@ async function getEtfData() {
     );
 
     etfDiv.innerHTML = `
-      <h3>ETFs & Index Funds</h3>
+      <h3>ETFs y fondos índice</h3>
       ${responses
         .map((etf) => {
           const info = etf.data;
@@ -110,22 +102,22 @@ async function getEtfData() {
               USD ${parseFloat(info.close).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })} 
+              })}
               <span style="color:${color}">${changeSymbol} ${info.percent_change}%</span></p>
             `;
           } else {
             return `
               <p>💹 <strong>${etf.name}</strong><br>
-              ⚠️ Data unavailable (symbol: ${etf.symbol})</p>
+              ⚠️ Datos no disponibles (símbolo: ${etf.symbol})</p>
             `;
           }
         })
         .join("")}
-      <p class="update-time">Updated: ${new Date().toLocaleTimeString()}</p>
+      <p class="update-time">Actualizado: ${new Date().toLocaleTimeString()}</p>
     `;
   } catch (error) {
     console.error("Error fetching ETF data:", error);
-    etfDiv.innerHTML = `<p>⚠️ Error loading ETF data. Please try again later.</p>`;
+    etfDiv.innerHTML = `<p>⚠️ Error al cargar los datos. Inténtalo de nuevo más tarde.</p>`;
   }
 }
 
@@ -142,37 +134,46 @@ const expenseAmount = document.getElementById("expenseAmount");
 const expenseList = document.getElementById("expenseList");
 const totalDisplay = document.getElementById("total");
 
+function renderExpenseItem(docId, desc, amount) {
+  return `${desc}: ${amount.toFixed(2)} DKK
+    <button class="delete-btn" style="color:#00d084;" onclick="editExpense('${docId}')">✏️ Editar</button>
+    <button class="delete-btn" onclick="deleteExpense('${docId}')">🗑️ Eliminar</button>`;
+}
+
 if (addExpenseBtn) {
   addExpenseBtn.addEventListener("click", async () => {
     const desc = expenseDesc.value.trim();
     const amount = parseFloat(expenseAmount.value);
 
     if (!desc || isNaN(amount) || amount <= 0) {
-      alert("⚠️ Please enter a valid description and amount.");
+      alert("⚠️ Introduce una descripción y un importe válidos.");
       return;
     }
 
     const user = auth.currentUser;
     if (!user) {
-      alert("⚠️ Please log in first.");
+      alert("⚠️ Debes iniciar sesión primero.");
       return;
     }
 
     try {
-      await db.collection("users").doc(user.uid).collection("expenses").add({
+      const docRef = await db.collection("users").doc(user.uid).collection("expenses").add({
         description: desc,
         amount: amount,
         date: new Date().toISOString(),
       });
 
-      // Mostrar en la lista
+      // Mostrar en la lista con botones de editar y eliminar
       const li = document.createElement("li");
-      li.textContent = `${desc}: ${amount.toFixed(2)} DKK`;
+      li.dataset.id = docRef.id;
+      li.dataset.description = desc;
+      li.dataset.amount = amount;
+      li.innerHTML = renderExpenseItem(docRef.id, desc, amount);
       expenseList.appendChild(li);
 
       // Actualizar localStorage para gráfico y totales
       const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
-      expensesData.push({ id: new Date().toISOString(), amount });
+      expensesData.push({ id: docRef.id, amount });
       localStorage.setItem("expenses", JSON.stringify(expensesData));
 
       const prevTotal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
@@ -193,9 +194,125 @@ if (addExpenseBtn) {
   });
 }
 
+async function deleteExpense(docId) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  try {
+    await db.collection("users").doc(user.uid).collection("expenses").doc(docId).delete();
+
+    // Eliminar de localStorage y recalcular total
+    const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
+    const index = expensesData.findIndex(e => e.id === docId);
+    let removedAmount = 0;
+    if (index !== -1) {
+      removedAmount = expensesData[index].amount;
+      expensesData.splice(index, 1);
+      localStorage.setItem("expenses", JSON.stringify(expensesData));
+    }
+
+    const prevTotal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
+    const newTotal = Math.max(0, prevTotal - removedAmount);
+    localStorage.setItem("totalExpenses", newTotal);
+
+    // Actualizar pantalla
+    const li = document.querySelector(`li[data-id="${docId}"]`);
+    if (li) li.remove();
+    totalDisplay.textContent = newTotal.toFixed(2);
+    updateBalanceDisplay();
+    updateExpensesChart();
+
+  } catch (error) {
+    console.error("❌ Error al eliminar el gasto:", error);
+    alert("⚠️ Error al eliminar el gasto. Inténtalo de nuevo.");
+  }
+}
+
+function editExpense(docId) {
+  const li = document.querySelector(`li[data-id="${docId}"]`);
+  if (!li) return;
+
+  const currentDesc = li.dataset.description;
+  const currentAmount = li.dataset.amount;
+
+  li.innerHTML = `
+    <input type="text" id="editDesc_${docId}" value="${currentDesc}"
+      style="background:#1b1f2a; color:white; border:1px solid #333; border-radius:4px; padding:4px; margin-right:6px;">
+    <input type="number" id="editAmount_${docId}" value="${currentAmount}"
+      style="width:80px; background:#1b1f2a; color:white; border:1px solid #333; border-radius:4px; padding:4px; margin-right:6px;">
+    <button class="delete-btn" style="color:#00d084;" onclick="saveExpenseEdit('${docId}')">✅ Guardar</button>
+    <button class="delete-btn" onclick="cancelEdit('${docId}')">✖ Cancelar</button>
+  `;
+}
+
+async function saveExpenseEdit(docId) {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const newDesc = document.getElementById(`editDesc_${docId}`).value.trim();
+  const newAmount = parseFloat(document.getElementById(`editAmount_${docId}`).value);
+
+  if (!newDesc || isNaN(newAmount) || newAmount <= 0) {
+    alert("⚠️ Introduce una descripción y un importe válidos.");
+    return;
+  }
+
+  const li = document.querySelector(`li[data-id="${docId}"]`);
+  const oldAmount = parseFloat(li.dataset.amount);
+
+  try {
+    await db.collection("users").doc(user.uid).collection("expenses").doc(docId).update({
+      description: newDesc,
+      amount: newAmount,
+    });
+
+    // Actualizar localStorage
+    const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
+    const index = expensesData.findIndex(e => e.id === docId);
+    if (index !== -1) {
+      expensesData[index].amount = newAmount;
+      localStorage.setItem("expenses", JSON.stringify(expensesData));
+    }
+
+    const prevTotal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
+    const newTotal = Math.max(0, prevTotal - oldAmount + newAmount);
+    localStorage.setItem("totalExpenses", newTotal);
+    totalDisplay.textContent = newTotal.toFixed(2);
+
+    // Actualizar el <li> con los nuevos datos
+    li.dataset.description = newDesc;
+    li.dataset.amount = newAmount;
+    li.innerHTML = renderExpenseItem(docId, newDesc, newAmount);
+
+    updateBalanceDisplay();
+    updateExpensesChart();
+
+  } catch (error) {
+    console.error("❌ Error al actualizar el gasto:", error);
+    alert("⚠️ Error al actualizar el gasto. Inténtalo de nuevo.");
+  }
+}
+
+function cancelEdit(docId) {
+  const li = document.querySelector(`li[data-id="${docId}"]`);
+  if (!li) return;
+  li.innerHTML = renderExpenseItem(docId, li.dataset.description, parseFloat(li.dataset.amount));
+}
+
 // Cargar gastos al iniciar sesión
 auth.onAuthStateChanged(async (user) => {
   if (user) {
+    // Si el usuario es distinto al que tenía la sesión anterior, limpiar localStorage
+    const storedUid = localStorage.getItem("currentUserId");
+    if (storedUid !== user.uid) {
+      localStorage.removeItem("totalIncome");
+      localStorage.removeItem("totalExpenses");
+      localStorage.removeItem("expenses");
+      localStorage.removeItem("notes");
+      localStorage.removeItem("monthlyHistory");
+      localStorage.setItem("currentUserId", user.uid);
+    }
+
     try {
       const snapshot = await db
         .collection("users")
@@ -210,12 +327,15 @@ auth.onAuthStateChanged(async (user) => {
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
         const li = document.createElement("li");
-        li.textContent = `${data.description}: ${data.amount.toFixed(2)} DKK`;
+        li.dataset.id = docSnap.id;
+        li.dataset.description = data.description;
+        li.dataset.amount = data.amount;
+        li.innerHTML = renderExpenseItem(docSnap.id, data.description, data.amount);
         expenseList.appendChild(li);
         total += data.amount;
 
         expensesData.push({
-          id: data.date || new Date().toISOString(),
+          id: docSnap.id,
           amount: data.amount,
         });
       });
@@ -223,10 +343,27 @@ auth.onAuthStateChanged(async (user) => {
       totalDisplay.textContent = total.toFixed(2);
       localStorage.setItem("totalExpenses", total);
       localStorage.setItem("expenses", JSON.stringify(expensesData));
+
+      // Cargar ingresos desde Firestore
+      const incomeSnapshot = await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("income")
+        .get();
+
+      if (!incomeSnapshot.empty) {
+        let incomeTotal = 0;
+        incomeSnapshot.forEach((docSnap) => {
+          incomeTotal += docSnap.data().amount;
+        });
+        localStorage.setItem("totalIncome", incomeTotal);
+        totalIncome = incomeTotal;
+      }
+
       updateBalanceDisplay();
       updateExpensesChart();
     } catch (err) {
-      console.error("❌ Error loading expenses:", err);
+      console.error("❌ Error loading data:", err);
     }
   } else {
     // Si no hay usuario, limpiar
@@ -247,21 +384,38 @@ const currentBalanceDisplay = document.getElementById("currentBalance");
 
 let totalIncome = parseFloat(localStorage.getItem("totalIncome")) || 0;
 let totalExpenses = parseFloat(localStorage.getItem("totalExpenses")) || 0;
+let portfolioChartInstance = null;
 
 updateBalanceDisplay();
 
 if (addIncomeBtn) {
-  addIncomeBtn.addEventListener("click", () => {
+  addIncomeBtn.addEventListener("click", async () => {
     const amount = parseFloat(incomeInput.value);
     if (isNaN(amount) || amount <= 0) {
-      alert("⚠️ Please enter a valid income amount.");
+      alert("⚠️ Introduce un importe válido.");
       return;
     }
 
-    totalIncome += amount;
-    localStorage.setItem("totalIncome", totalIncome);
-    incomeInput.value = "";
-    updateBalanceDisplay();
+    const user = auth.currentUser;
+    if (!user) {
+      alert("⚠️ Debes iniciar sesión primero.");
+      return;
+    }
+
+    try {
+      await db.collection("users").doc(user.uid).collection("income").add({
+        amount: amount,
+        date: new Date().toISOString(),
+      });
+
+      totalIncome += amount;
+      localStorage.setItem("totalIncome", totalIncome);
+      incomeInput.value = "";
+      updateBalanceDisplay();
+    } catch (error) {
+      console.error("❌ Error saving income:", error);
+      alert("⚠️ Error al guardar el ingreso. Inténtalo de nuevo.");
+    }
   });
 }
 
@@ -273,11 +427,14 @@ function updateBalanceDisplay() {
   if (totalIncomeDisplay) totalIncomeDisplay.textContent = totalIncome.toFixed(2);
   if (totalExpensesDisplay) totalExpensesDisplay.textContent = totalExpenses.toFixed(2);
   if (currentBalanceDisplay) currentBalanceDisplay.textContent = currentBalance.toFixed(2);
+  updatePortfolioChart();
 }
 
 // ===========================================
 // 📊 GRÁFICO DE GASTOS MENSUALES
 // ===========================================
+let expensesChartInstance = null;
+
 function updateExpensesChart() {
   const canvas = document.getElementById("expensesChart");
   if (!canvas) return;
@@ -288,7 +445,7 @@ function updateExpensesChart() {
 
   expensesData.forEach((exp) => {
     const date = new Date(exp.id);
-    const month = date.toLocaleString("default", { month: "short" });
+    const month = date.toLocaleString("es-ES", { month: "short" });
     monthlyTotals[month] = (monthlyTotals[month] || 0) + exp.amount;
   });
 
@@ -300,7 +457,9 @@ function updateExpensesChart() {
     return;
   }
 
-  new Chart(ctx, {
+  if (expensesChartInstance) expensesChartInstance.destroy();
+
+  expensesChartInstance = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
@@ -332,6 +491,49 @@ function updateExpensesChart() {
   });
 }
 
+// ===========================================
+// 🥧 GRÁFICO DE PORTFOLIO (datos reales)
+// ===========================================
+function updatePortfolioChart() {
+  const canvas = document.getElementById("portfolioChart");
+  if (!canvas) return;
+
+  const totalIncomeVal = parseFloat(localStorage.getItem("totalIncome")) || 0;
+  const totalExpensesVal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
+  const savings = Math.max(0, totalIncomeVal - totalExpensesVal);
+
+  const ctx = canvas.getContext("2d");
+
+  if (totalIncomeVal === 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
+
+  if (portfolioChartInstance) portfolioChartInstance.destroy();
+
+  portfolioChartInstance = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ["Expenses", "Savings"],
+      datasets: [{
+        data: [totalExpensesVal, savings],
+        backgroundColor: ["#ff4d4d90", "#00d08490"],
+        borderColor: ["#ff4d4d", "#00d084"],
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: "#ccc" }
+        }
+      }
+    }
+  });
+}
+
 /* ==============================
    🕒 CONTEXTO TEMPORAL Y NÓMINA
    ============================== */
@@ -342,8 +544,24 @@ window.addEventListener("load", () => {
   const daysToPayday = document.getElementById("daysToPayday");
   const paydayDisplay = document.getElementById("paydayDisplay");
 
-  const payday = 30;
+  let payday = parseInt(localStorage.getItem("payday")) || 30;
   if (paydayDisplay) paydayDisplay.textContent = payday;
+
+  const savePaydayBtn = document.getElementById("savePayday");
+  const paydayInput = document.getElementById("paydayInput");
+  if (savePaydayBtn && paydayInput) {
+    savePaydayBtn.addEventListener("click", () => {
+      const newDay = parseInt(paydayInput.value);
+      if (isNaN(newDay) || newDay < 1 || newDay > 31) {
+        alert("⚠️ Introduce un día válido entre 1 y 31.");
+        return;
+      }
+      payday = newDay;
+      localStorage.setItem("payday", payday);
+      if (paydayDisplay) paydayDisplay.textContent = payday;
+      paydayInput.value = "";
+    });
+  }
 
   function updateDateTime() {
     const now = new Date();
@@ -397,31 +615,35 @@ function updateSmartSummary() {
   const currentBalance = totalIncomeVal - totalExpensesVal;
 
   const now = new Date();
-  const payday = 30;
+  const payday = parseInt(localStorage.getItem("payday")) || 30;
   const today = now.getDate();
   const daysLeft = payday >= today ? payday - today : payday + (30 - today);
 
   let summary = "";
 
   if (totalIncomeVal === 0) {
-    summary = "💡 Add your monthly income to start tracking your balance.";
+    summary = "💡 Añade tus ingresos del mes para empezar a ver tu balance.";
+    summary += "<br><br>📚 <em>Consejo financiero: saber exactamente cuánto ganas al mes es el primer paso para controlar tu dinero. No puedes gestionar lo que no mides.</em>";
   } else {
     const expenseRatio = (totalExpensesVal / totalIncomeVal) * 100;
     const dailyLimit = (currentBalance / (daysLeft || 1)).toFixed(2);
 
     summary = `
-      💰 You’ve earned <strong>${totalIncomeVal.toFixed(2)} DKK</strong> this month.<br>
-      💸 You’ve spent <strong>${totalExpensesVal.toFixed(2)} DKK</strong> (${expenseRatio.toFixed(1)}% of your income).<br>
-      ⏳ There are <strong>${daysLeft}</strong> days left until your next paycheck.<br>
-      📊 You can safely spend about <strong>${dailyLimit} DKK/day</strong> to stay on budget.<br>
+      💰 Has ingresado <strong>${totalIncomeVal.toFixed(2)} DKK</strong> este mes.<br>
+      💸 Has gastado <strong>${totalExpensesVal.toFixed(2)} DKK</strong> (${expenseRatio.toFixed(1)}% de tus ingresos).<br>
+      ⏳ Quedan <strong>${daysLeft}</strong> días hasta tu próxima nómina.<br>
+      📊 Puedes gastar aproximadamente <strong>${dailyLimit} DKK/día</strong> para no pasarte del presupuesto.<br>
     `;
 
     if (expenseRatio < 60) {
-      summary += "🟢 Excellent! You’re saving very efficiently this month.";
+      summary += "🟢 ¡Excelente! Estás ahorrando muy bien este mes.";
+      summary += "<br><br>📚 <em>Consejo financiero: si tienes 100€ o más ahorrados, ya puedes empezar a explorar la inversión de bajo riesgo. Los ETFs (fondos índice) te permiten invertir en cientos de empresas a la vez, algo mucho más seguro que comprar acciones individuales o criptomonedas.</em>";
     } else if (expenseRatio < 90) {
-      summary += "🟡 You’re doing fine, but keep an eye on your expenses.";
+      summary += "🟡 Vas bien, pero vigila tus gastos.";
+      summary += "<br><br>📚 <em>Consejo financiero: prueba la regla 50/30/20 — 50% para necesidades (alquiler, comida, facturas), 30% para caprichos (ocio, suscripciones) y 20% para ahorro. Los pequeños cambios de hábito marcan una gran diferencia con el tiempo.</em>";
     } else {
-      summary += "🔴 Warning! You’ve spent too much; slow down a bit.";
+      summary += "🔴 ¡Atención! Has gastado demasiado. Es momento de frenar.";
+      summary += "<br><br>📚 <em>Consejo financiero: cuando los gastos superan los ingresos, lo primero es hacer una lista de todo en lo que gastas. Después, separa lo que es una necesidad real (sin ello no puedes vivir) de lo que es un capricho (puedes prescindir de ello). Empieza recortando los caprichos.</em>";
     }
   }
 
@@ -437,7 +659,6 @@ updateSmartSummary();
 
 const saveMonthBtn = document.getElementById("saveMonth");
 const historyBody = document.getElementById("historyBody");
-const exportCSVBtn = document.getElementById("exportCSV");
 
 let historyData = JSON.parse(localStorage.getItem("monthlyHistory")) || [];
 
@@ -458,7 +679,7 @@ if (saveMonthBtn) {
     );
 
     if (existing) {
-      alert("⚠️ This month's data has already been saved.");
+      alert("⚠️ Los datos de este mes ya están guardados.");
       return;
     }
 
@@ -486,25 +707,53 @@ function renderHistory() {
   });
 }
 
-if (exportCSVBtn) {
-  exportCSVBtn.addEventListener("click", () => {
-    if (historyData.length === 0) {
-      alert("⚠️ No data to export yet!");
-      return;
-    }
 
-    let csvContent = "Month,Income (DKK),Expenses (DKK),Balance (DKK)\n";
-    historyData.forEach((h) => {
-      csvContent += `${h.month} ${h.year},${h.income},${h.expenses},${h.balance}\n`;
-    });
+/* ==============================
+   🧾 NOTAS
+   ============================== */
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "financial-history.csv";
-    link.click();
+const saveNoteBtn = document.getElementById("saveNote");
+const noteText = document.getElementById("noteText");
+const savedNotesDiv = document.getElementById("savedNotes");
+
+let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+function renderNotes() {
+  if (!savedNotesDiv) return;
+  savedNotesDiv.innerHTML = "";
+  notes.forEach((note, index) => {
+    const div = document.createElement("div");
+    div.className = "note";
+    div.innerHTML = `
+      <p>${note.text}</p>
+      <small style="color:#aaa;">${note.date}</small>
+      <button class="delete-btn" onclick="deleteNote(${index})">🗑️ Eliminar</button>
+    `;
+    savedNotesDiv.appendChild(div);
   });
 }
+
+function deleteNote(index) {
+  notes.splice(index, 1);
+  localStorage.setItem("notes", JSON.stringify(notes));
+  renderNotes();
+}
+
+if (saveNoteBtn) {
+  saveNoteBtn.addEventListener("click", () => {
+    const text = noteText.value.trim();
+    if (!text) {
+      alert("⚠️ Escribe algo antes de guardar.");
+      return;
+    }
+    notes.push({ text, date: new Date().toLocaleString() });
+    localStorage.setItem("notes", JSON.stringify(notes));
+    noteText.value = "";
+    renderNotes();
+  });
+}
+
+renderNotes();
 
 /* ==============================
    📰 MÓDULO DE NOTICIAS
@@ -517,7 +766,7 @@ const newsApiKey = "pub_6561e61294f94e71ac555b551d6dc3b6";
 
 async function loadMarketNews() {
   if (!newsFeed) return;
-  newsFeed.innerHTML = "<p>Loading latest news...</p>";
+  newsFeed.innerHTML = "<p>Cargando noticias...</p>";
 
   try {
     const query = trackedAssets.join(" OR ");
@@ -525,7 +774,7 @@ async function loadMarketNews() {
     const data = await response.json();
 
     if (!data.results || data.results.length === 0) {
-      newsFeed.innerHTML = "<p>No recent news found for your tracked assets.</p>";
+      newsFeed.innerHTML = "<p>No se han encontrado noticias recientes.</p>";
       return;
     }
 
@@ -535,7 +784,7 @@ async function loadMarketNews() {
       div.classList.add("news-item");
       div.innerHTML = `
         <h3>${article.title}</h3>
-        <p><a href="${article.link}" target="_blank">🔗 Read more</a></p>
+        <p><a href="${article.link}" target="_blank">🔗 Leer más</a></p>
         <p class="date">🕒 ${new Date(article.pubDate).toLocaleString()}</p>
       `;
       newsFeed.appendChild(div);
@@ -543,7 +792,7 @@ async function loadMarketNews() {
 
   } catch (error) {
     console.error("❌ Error loading news:", error);
-    newsFeed.innerHTML = "<p>⚠️ Error loading news. Please try again later.</p>";
+    newsFeed.innerHTML = "<p>⚠️ Error al cargar las noticias. Inténtalo de nuevo más tarde.</p>";
   }
 }
 
@@ -574,14 +823,14 @@ document.addEventListener("DOMContentLoaded", () => {
     isLoginMode = !isLoginMode;
     if (isLoginMode) {
       nameInput.classList.add("hidden");
-      actionBtn.textContent = "Login";
-      document.getElementById("formTitle").textContent = "Sign in to Doctor en Economía";
-      toggleMode.textContent = "Don’t have an account? Create one";
+      actionBtn.textContent = "Iniciar sesión";
+      document.getElementById("formTitle").textContent = "Inicia sesión en Doctor en Economía";
+      toggleMode.textContent = "¿No tienes cuenta? Créala aquí";
     } else {
       nameInput.classList.remove("hidden");
-      actionBtn.textContent = "Create Account";
-      document.getElementById("formTitle").textContent = "Create your Doctor en Economía account";
-      toggleMode.textContent = "Already have an account? Sign in";
+      actionBtn.textContent = "Crear cuenta";
+      document.getElementById("formTitle").textContent = "Crea tu cuenta en Doctor en Economía";
+      toggleMode.textContent = "¿Ya tienes cuenta? Inicia sesión";
     }
   });
 
@@ -591,20 +840,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = passwordInput.value.trim();
 
     if (!email || !password) {
-      loginStatus.textContent = "⚠️ Please enter email and password.";
+      loginStatus.textContent = "⚠️ Introduce el correo y la contraseña.";
       return;
     }
 
     try {
       if (isLoginMode) {
         await auth.signInWithEmailAndPassword(email, password);
-        loginStatus.textContent = `✅ Welcome back, ${email}`;
+        loginStatus.textContent = `✅ Bienvenido/a de nuevo, ${email}`;
       } else {
         await auth.createUserWithEmailAndPassword(email, password);
-        loginStatus.textContent = "✅ Account created successfully!";
+        loginStatus.textContent = "✅ ¡Cuenta creada correctamente!";
       }
     } catch (error) {
-      loginStatus.textContent = "⚠️ " + error.message;
+      const mensajesError = {
+        "auth/wrong-password": "Contraseña incorrecta. Inténtalo de nuevo.",
+        "auth/user-not-found": "No existe ninguna cuenta con ese correo.",
+        "auth/email-already-in-use": "Este correo ya está registrado. Inicia sesión.",
+        "auth/invalid-email": "El formato del correo no es válido.",
+        "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.",
+        "auth/too-many-requests": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+        "auth/network-request-failed": "Sin conexión. Comprueba tu red e inténtalo de nuevo.",
+      };
+      const mensaje = mensajesError[error.code] || "Ha ocurrido un error. Inténtalo de nuevo.";
+      loginStatus.textContent = "⚠️ " + mensaje;
     }
   });
 
@@ -637,7 +896,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Botón de Logout
   if (footer) {
     const logoutBtn = document.createElement("button");
-    logoutBtn.textContent = "Logout";
+    logoutBtn.textContent = "Cerrar sesión";
     logoutBtn.style.background = "#00d084";
     logoutBtn.style.color = "#000";
     logoutBtn.style.border = "none";
@@ -647,7 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logoutBtn.style.cursor = "pointer";
     logoutBtn.onclick = async () => {
       await auth.signOut();
-      alert("👋 You’ve been logged out.");
+      alert("👋 Has cerrado sesión correctamente.");
       window.location.reload();
     };
     footer.appendChild(logoutBtn);

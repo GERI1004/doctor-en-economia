@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,14 +12,14 @@
   <!-- LOGIN SCREEN -->
   <section id="loginSection">
     <div class="login-container">
-      <h2 id="formTitle">Sign in to Doctor en Economía</h2>
+      <h2 id="formTitle">Inicia sesión en Doctor en Economía</h2>
 
       <div class="login-box">
-        <input type="email" id="emailInput" placeholder="Email" required>
-        <input type="password" id="passwordInput" placeholder="Password" required>
-        <input type="text" id="nameInput" placeholder="Full Name (only for new accounts)" class="hidden">
-        <button id="actionBtn">Login</button>
-        <p id="toggleMode" class="toggle-link">Don’t have an account? Create one</p>
+        <input type="email" id="emailInput" placeholder="Correo electrónico" required>
+        <input type="password" id="passwordInput" placeholder="Contraseña" required>
+        <input type="text" id="nameInput" placeholder="Nombre completo (solo para cuentas nuevas)" class="hidden">
+        <button id="actionBtn">Iniciar sesión</button>
+        <p id="toggleMode" class="toggle-link">¿No tienes cuenta? Créala aquí</p>
       </div>
 
       <p id="loginStatus" class="status-text"></p>
@@ -28,24 +28,29 @@
 
   <header>
     <h1>Doctor en Economía 💼</h1>
-    <p>Your personal finance dashboard</p>
+    <p>Tu panel de finanzas personales</p>
   </header>
 
   <main>
-    <!-- Current Time and Payroll Info -->
+    <!-- Contexto actual -->
     <section id="context">
-      <h2>🕒 Current Context</h2>
+      <h2>🕒 Contexto actual</h2>
       <div class="context-box">
-        <p><strong>📆 Date:</strong> <span id="currentDate">Loading...</span></p>
-        <p><strong>🕐 Time:</strong> <span id="currentTime">Loading...</span></p>
-        <p><strong>💼 Payroll:</strong> You get paid every <span id="paydayDisplay">30</span>th of each month</p>
-        <p><strong>⏳ Days until next payday:</strong> <span id="daysToPayday">0</span></p>
+        <p><strong>📆 Fecha:</strong> <span id="currentDate">Cargando...</span></p>
+        <p><strong>🕐 Hora:</strong> <span id="currentTime">Cargando...</span></p>
+        <p><strong>💼 Nómina:</strong> Cobras el día <span id="paydayDisplay">30</span> de cada mes</p>
+        <p>
+          <label>Cambiar día de cobro: </label>
+          <input type="number" id="paydayInput" min="1" max="31" placeholder="Día (1-31)" style="width:90px; padding:4px; background:#1b1f2a; color:white; border:1px solid #333; border-radius:4px;">
+          <button id="savePayday" style="padding:4px 10px; background:#00d084; color:#000; border:none; border-radius:4px; cursor:pointer; font-weight:600; margin-left:6px;">Guardar</button>
+        </p>
+        <p><strong>⏳ Días hasta la próxima nómina:</strong> <span id="daysToPayday">0</span></p>
       </div>
     </section>
 
-    <!-- Real-Time Market Data -->
+    <!-- Datos de mercado en tiempo real -->
     <section id="market">
-      <h2>📈 Market Overview</h2>
+      <h2>📈 Visión del mercado</h2>
       <div class="market-grid">
         <div class="market-box" id="crypto"></div>
         <div class="market-box" id="etfs"></div>
@@ -53,85 +58,84 @@
       </div>
     </section>
 
-    <!-- Expense Tracker -->
+    <!-- Control de gastos -->
     <section id="expenses">
-      <h2>💸 Expense Tracker</h2>
-      <input type="text" id="expenseDesc" placeholder="Description">
-      <input type="number" id="expenseAmount" placeholder="Amount (DKK)">
-      <button id="addExpense">Add Expense</button>
+      <h2>💸 Control de gastos</h2>
+      <input type="text" id="expenseDesc" placeholder="Descripción">
+      <input type="number" id="expenseAmount" placeholder="Importe (DKK)">
+      <button id="addExpense">Añadir gasto</button>
       <ul id="expenseList"></ul>
       <h3>Total: <span id="total">0</span> DKK</h3>
     </section>
 
-    <!-- Portfolio Chart -->
+    <!-- Distribución del presupuesto -->
     <section id="portfolio">
-      <h2>🥧 Portfolio Distribution</h2>
+      <h2>🥧 Distribución del presupuesto</h2>
       <canvas id="portfolioChart" width="400" height="400"></canvas>
     </section>
 
     <!-- Notes -->
     <section id="notes">
       <h2>🧾 Notes</h2>
-      <textarea id="noteText" placeholder="Write your thoughts..."></textarea>
-      <button id="saveNote">Save Note</button>
+      <textarea id="noteText" placeholder="Escribe tus anotaciones aquí..."></textarea>
+      <button id="saveNote">Guardar nota</button>
       <div id="savedNotes"></div>
     </section>
 
-    <!-- Balance and Monthly Summary -->
+    <!-- Balance real -->
     <section id="balance">
-      <h2>💰 Real Balance</h2>
+      <h2>💰 Balance real</h2>
       <div class="balance-container">
         <div>
-          <label for="income">💵 Add Income:</label>
-          <input type="number" id="income" placeholder="Amount (DKK)">
-          <button id="addIncome">Add</button>
+          <label for="income">💵 Añadir ingreso:</label>
+          <input type="number" id="income" placeholder="Importe (DKK)">
+          <button id="addIncome">Añadir</button>
         </div>
         <div class="balance-info">
-          <p>Total Income: <strong><span id="totalIncome">0</span> DKK</strong></p>
-          <p>Total Expenses: <strong><span id="totalExpenses">0</span> DKK</strong></p>
-          <h3>💎 Current Balance: <span id="currentBalance">0</span> DKK</h3>
+          <p>Ingresos totales: <strong><span id="totalIncome">0</span> DKK</strong></p>
+          <p>Gastos totales: <strong><span id="totalExpenses">0</span> DKK</strong></p>
+          <h3>💎 Balance actual: <span id="currentBalance">0</span> DKK</h3>
         </div>
       </div>
-      <h3>📊 Monthly Overview</h3>
+      <h3>📊 Resumen mensual</h3>
       <canvas id="expensesChart" width="400" height="250"></canvas>
     </section>
 
-    <!-- Smart Summary -->
+    <!-- Resumen inteligente -->
     <section id="summary">
-      <h2>🧠 Smart Summary</h2>
+      <h2>🧠 Resumen inteligente</h2>
       <div class="summary-box" id="smartSummary">
-        <p>Loading personalized analysis...</p>
+        <p>Cargando análisis personalizado...</p>
       </div>
     </section>
 
-    <!-- Real-Time Market News -->
+    <!-- Noticias del mercado -->
     <section id="news">
-      <h2>📰 Market News</h2>
-      <p>Stay informed with the latest updates about your tracked assets.</p>
-      <button id="loadNews">🔄 Refresh News</button>
+      <h2>📰 Noticias del mercado</h2>
+      <p>Mantente al día con las últimas novedades sobre los activos que sigues.</p>
+      <button id="loadNews">🔄 Actualizar noticias</button>
       <div id="newsFeed">
-        <p>Loading market news...</p>
+        <p>Cargando noticias...</p>
       </div>
     </section>
 
-    <!-- Monthly History -->
+    <!-- Historial mensual -->
     <section id="history">
-      <h2>📅 Monthly History</h2>
+      <h2>📅 Historial mensual</h2>
       <table id="historyTable">
         <thead>
           <tr>
-            <th>Month</th>
-            <th>Income (DKK)</th>
-            <th>Expenses (DKK)</th>
+            <th>Mes</th>
+            <th>Ingresos (DKK)</th>
+            <th>Gastos (DKK)</th>
             <th>Balance (DKK)</th>
           </tr>
         </thead>
         <tbody id="historyBody"></tbody>
       </table>
-      <button id="saveMonth">💾 Save Current Month</button>
+      <button id="saveMonth">💾 Guardar mes actual</button>
     </section>
 
-    <button id="exportCSV">📤 Export to Excel (CSV)</button>
   </main>
 
   <footer>

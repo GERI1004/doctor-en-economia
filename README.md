@@ -9,7 +9,7 @@
 La aplicación permite al usuario:
 
 - 🔐 **Registrarse e iniciar sesión** con correo y contraseña (Firebase Auth)
-- 💸 **Registrar y eliminar gastos diarios**, sincronizados en la nube
+- 💸 **Registrar, editar y eliminar gastos diarios**, sincronizados en la nube
 - 💰 **Añadir ingresos mensuales**, también guardados en la nube
 - 💎 **Ver el balance real** (ingresos − gastos) actualizado automáticamente
 - 🥧 **Visualizar la distribución del presupuesto** mediante un gráfico donut (gastos vs ahorro)
@@ -17,7 +17,7 @@ La aplicación permite al usuario:
 - 🧾 **Guardar notas personales** sobre finanzas
 - 📈 **Consultar precios en tiempo real** de criptomonedas y ETFs mediante APIs externas
 - 📰 **Leer noticias del mercado financiero**
-- 📅 **Guardar el historial mensual** y exportarlo a CSV
+- 📅 **Guardar el historial mensual** de ingresos, gastos y balance
 - 🧠 **Recibir un resumen inteligente** con consejos financieros adaptados al estado del usuario
 
 ---
@@ -160,7 +160,6 @@ La solución correcta sería un backend propio que hiciera las llamadas a las AP
 
 - **Usaría un solo sistema de almacenamiento.** Todo en Firestore desde el primer momento, sin depender de localStorage para datos que deberían sincronizarse.
 - **Dividiría el JavaScript en varios archivos desde el principio.** Un archivo por módulo (Firebase, gastos, gráficos, etc.) en lugar de más de 700 líneas en un único archivo.
-- **Implementaría el CRUD completo desde el principio.** La operación Update (modificar un dato ya guardado) debería haberse incluido desde el inicio.
 - **Plantearía la seguridad desde el diseño.** Las API keys expuestas son difíciles de resolver cuando la arquitectura ya está construida sin backend propio.
 
 ---
