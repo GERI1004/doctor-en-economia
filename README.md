@@ -46,6 +46,48 @@ La aplicación permite al usuario:
 
 ---
 
+## 📖 Cómo usar la aplicación
+
+Una vez dentro de la app, la barra de navegación superior te permite saltar directamente a cualquier sección.
+
+### 1. Registro e inicio de sesión
+Al abrir la app aparece la pantalla de login. Si es la primera vez, pulsa **"¿No tienes cuenta? Créala aquí"**, introduce tu correo y una contraseña de al menos 6 caracteres. Una vez registrado, inicias sesión automáticamente. Tus datos quedan vinculados a tu cuenta y se recuperan desde cualquier dispositivo.
+
+### 2. Configurar tu día de cobro
+En la sección **Contexto actual** puedes indicar el día del mes en que cobras la nómina. La app calculará automáticamente cuántos días faltan para el próximo ingreso y lo usará en el análisis financiero.
+
+### 3. Registrar gastos
+En **Control de gastos** escribe una descripción (ej. "Supermercado") y el importe en DKK. Pulsa **Añadir gasto**. Cada gasto se guarda en la nube (Firestore) y aparece en la lista con botones para **editarlo** o **eliminarlo**. El total se actualiza en tiempo real.
+
+### 4. Registrar ingresos
+En la sección **Balance real**, introduce el importe de tu nómina o cualquier otro ingreso y pulsa **Añadir**. El balance (ingresos − gastos) se recalcula al instante.
+
+### 5. Ver la distribución del presupuesto
+El gráfico donut de **Distribución del presupuesto** muestra visualmente qué porcentaje de tus ingresos ha ido a gastos y cuánto queda como ahorro. Se actualiza automáticamente al añadir datos.
+
+### 6. Leer el resumen inteligente
+La sección **Resumen inteligente** analiza tu situación financiera del mes: porcentaje gastado, días restantes hasta la nómina, gasto diario disponible y un consejo financiero personalizado según tu estado (ahorro excelente, aceptable o en rojo).
+
+### 7. Consultar datos de mercado
+En **Visión del mercado** encontrarás:
+- Precios y variación en 24h de las principales **criptomonedas** (Bitcoin, Ethereum, Solana…)
+- Cotización de **ETFs** (S&P 500, NASDAQ 100, Semiconductores, IA)
+- Datos actualizados cada 5-10 minutos automáticamente
+
+### 8. Leer noticias financieras
+En **Noticias del mercado** pulsa **Actualizar noticias** para cargar los últimos artículos relacionados con los activos que sigue la app. Cada noticia incluye un enlace directo a la fuente.
+
+### 9. Guardar el historial mensual
+Al final del mes, ve a **Historial mensual** y pulsa **Guardar mes actual**. Se registrará una fila con ingresos, gastos y balance de ese mes. Así puedes comparar tu evolución mes a mes.
+
+### 10. Tomar notas
+En **Notas** puedes escribir y guardar apuntes personales sobre tus finanzas (objetivos, recordatorios, reflexiones). Cada nota se guarda con su fecha y se puede eliminar individualmente.
+
+### Cerrar sesión
+El botón **Cerrar sesión** aparece al final de la página, en el pie. Tus datos permanecen guardados en la nube para la próxima vez que entres.
+
+---
+
 ## 📁 Estructura del proyecto
 
 ```
