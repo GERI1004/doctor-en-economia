@@ -3,7 +3,7 @@
    ================================ */
 
 /* 🔒 Hide app until login */
-main, header, footer, #context, #market, #expenses, 
+main, header, footer, #mainNav, #context, #market, #expenses,
 #portfolio, #notes, #balance, #summary, #news, #history, #exportCSV {
   display: none;
   opacity: 0;
@@ -148,6 +148,39 @@ header p {
 }
 
 /* ================================
+   NAVBAR
+   ================================ */
+#mainNav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  padding: 10px 16px;
+  background: rgba(14, 17, 23, 0.95);
+  border-bottom: 1px solid #00d08430;
+  backdrop-filter: blur(6px);
+}
+
+#mainNav a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 20px;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+#mainNav a:hover {
+  background: #00d08420;
+  color: #00d084;
+}
+
+/* ================================
    SECCIONES
    ================================ */
 main {
@@ -230,7 +263,6 @@ section h2 {
   border-left: 4px solid #00d084;
 }
 
-/* Botón eliminar gasto (si lo añades en el futuro) */
 .delete-btn {
   background: none;
   border: none;

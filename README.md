@@ -41,7 +41,8 @@ La aplicación permite al usuario:
 2. Abre la carpeta en **Visual Studio Code**.
 3. Instala la extensión **Live Server** (si no la tienes).
 4. Haz clic derecho en `index.html` → **Open with Live Server**.
-5. Espera unos segundos a que se carguen los datos de mercado.
+5. Crea una cuenta o inicia sesión con un correo y contraseña.
+6. Espera unos segundos a que se carguen los datos de mercado en tiempo real.
 
 ---
 
@@ -52,8 +53,7 @@ doctor-en-economia/
 ├── index.html      — Estructura HTML de la aplicación
 ├── style.css       — Estilos visuales
 ├── script.js       — Lógica JavaScript completa
-├── README.md       — Documentación del proyecto
-└── TESTS.md        — Pruebas manuales realizadas
+└── README.md       — Documentación del proyecto
 ```
 
 ---

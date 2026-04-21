@@ -465,7 +465,7 @@ function updateExpensesChart() {
       labels,
       datasets: [
         {
-          label: "Monthly Expenses (DKK)",
+          label: "Gastos mensuales (DKK)",
           data: values,
           backgroundColor: "#00d08490",
           borderColor: "#00d084",
@@ -514,7 +514,7 @@ function updatePortfolioChart() {
   portfolioChartInstance = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Expenses", "Savings"],
+      labels: ["Gastos", "Ahorro"],
       datasets: [{
         data: [totalExpensesVal, savings],
         backgroundColor: ["#ff4d4d90", "#00d08490"],
@@ -870,7 +870,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Mostrar/ocultar app al cambiar el estado de auth
   auth.onAuthStateChanged((user) => {
     const allSections = document.querySelectorAll(
-      "main, header, footer, #context, #market, #expenses, #portfolio, #notes, #balance, #summary, #news, #history, #exportCSV"
+      "main, header, footer, #mainNav, #context, #market, #expenses, #portfolio, #notes, #balance, #summary, #news, #history, #exportCSV"
     );
 
     if (user) {
