@@ -31,7 +31,7 @@ La aplicación permite al usuario:
 - **CoinGecko API** — precios de criptomonedas
 - **TwelveData API** — precios de ETFs e índices bursátiles
 - **NewsData.io API** — noticias del mercado financiero
-- **localStorage** — almacenamiento local para notas, historial mensual y configuración
+- **localStorage** — almacenamiento local para preferencias de configuración (día de cobro) y caché de datos de sesión
 
 ---
 
@@ -133,12 +133,11 @@ La limitación principal es que la URL no cambia al navegar entre secciones y el
 
 ### ¿Por qué localStorage en algunas partes?
 
-El proyecto usa Firestore para los datos críticos (gastos e ingresos) y localStorage para datos secundarios (notas, historial mensual y día de cobro).
+El proyecto usa Firestore para todos los datos del usuario (gastos, ingresos, notas e historial mensual) y localStorage únicamente para preferencias de configuración y caché de sesión.
 
-- **Las notas son personales y locales.** No es necesario que sincronicen entre dispositivos.
-- **El historial mensual es un resumen calculado**, no una entidad de base de datos. Guardarlo en localStorage es suficiente.
-- **El día de cobro es una preferencia de configuración** que no cambia con frecuencia.
-- **localStorage actúa como caché.** Al cargar los gastos desde Firestore, se guardan también en localStorage para que los gráficos puedan acceder a ellos de forma inmediata.
+- **El día de cobro es una preferencia local** que no necesita sincronización entre dispositivos.
+- **localStorage actúa como caché de rendimiento.** Al cargar los gastos desde Firestore, se guardan también en localStorage para que los gráficos puedan acceder a ellos de forma inmediata sin esperar nuevas llamadas a la base de datos.
+- **Notas e historial mensual están en Firestore**, lo que garantiza que el usuario accede a sus datos desde cualquier dispositivo.
 
 ---
 
@@ -200,7 +199,7 @@ La solución correcta sería un backend propio que hiciera las llamadas a las AP
 
 ### Qué haría diferente si empezara de nuevo
 
-- **Usaría un solo sistema de almacenamiento.** Todo en Firestore desde el primer momento, sin depender de localStorage para datos que deberían sincronizarse.
+- **Centralizar el almacenamiento desde el principio.** El proyecto comenzó mezclando Firestore y localStorage para distintos tipos de datos. Durante el desarrollo se migró todo a Firestore, dejando localStorage solo como caché de rendimiento y preferencias de configuración.
 - **Dividiría el JavaScript en varios archivos desde el principio.** Un archivo por módulo (Firebase, gastos, gráficos, etc.) en lugar de más de 700 líneas en un único archivo.
 - **Plantearía la seguridad desde el diseño.** Las API keys expuestas son difíciles de resolver cuando la arquitectura ya está construida sin backend propio.
 

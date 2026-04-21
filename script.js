@@ -308,8 +308,6 @@ auth.onAuthStateChanged(async (user) => {
       localStorage.removeItem("totalIncome");
       localStorage.removeItem("totalExpenses");
       localStorage.removeItem("expenses");
-      localStorage.removeItem("notes");
-      localStorage.removeItem("monthlyHistory");
       localStorage.setItem("currentUserId", user.uid);
     }
 
@@ -362,6 +360,8 @@ auth.onAuthStateChanged(async (user) => {
 
       updateBalanceDisplay();
       updateExpensesChart();
+      loadNotes();
+      loadHistory();
     } catch (err) {
       console.error("❌ Error loading data:", err);
     }
@@ -654,47 +654,15 @@ setInterval(updateSmartSummary, 3000);
 updateSmartSummary();
 
 /* ==============================
-   📅 HISTORIAL MENSUAL + CSV
+   📅 HISTORIAL MENSUAL (Firestore)
    ============================== */
 
 const saveMonthBtn = document.getElementById("saveMonth");
 const historyBody = document.getElementById("historyBody");
 
-let historyData = JSON.parse(localStorage.getItem("monthlyHistory")) || [];
-
-renderHistory();
-
-if (saveMonthBtn) {
-  saveMonthBtn.addEventListener("click", () => {
-    const totalIncomeVal = parseFloat(localStorage.getItem("totalIncome")) || 0;
-    const totalExpensesVal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
-    const balance = totalIncomeVal - totalExpensesVal;
-
-    const now = new Date();
-    const month = now.toLocaleString("default", { month: "long" });
-    const year = now.getFullYear();
-
-    const existing = historyData.find(
-      (h) => h.month === month && h.year === year
-    );
-
-    if (existing) {
-      alert("⚠️ Los datos de este mes ya están guardados.");
-      return;
-    }
-
-    const record = { month, year, income: totalIncomeVal, expenses: totalExpensesVal, balance };
-    historyData.push(record);
-    localStorage.setItem("monthlyHistory", JSON.stringify(historyData));
-
-    renderHistory();
-  });
-}
-
-function renderHistory() {
+function renderHistory(historyData) {
   if (!historyBody) return;
   historyBody.innerHTML = "";
-
   historyData.forEach((h) => {
     const row = document.createElement("tr");
     row.innerHTML = `
@@ -707,53 +675,123 @@ function renderHistory() {
   });
 }
 
+async function loadHistory() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    const snapshot = await db.collection("users").doc(user.uid).collection("history")
+      .orderBy("timestamp", "asc").get();
+    const historyData = snapshot.docs.map(doc => doc.data());
+    renderHistory(historyData);
+  } catch (err) {
+    console.error("❌ Error loading history:", err);
+  }
+}
+
+if (saveMonthBtn) {
+  saveMonthBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const totalIncomeVal = parseFloat(localStorage.getItem("totalIncome")) || 0;
+    const totalExpensesVal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
+    const balance = totalIncomeVal - totalExpensesVal;
+
+    const now = new Date();
+    const month = now.toLocaleString("es-ES", { month: "long" });
+    const year = now.getFullYear();
+
+    try {
+      const existing = await db.collection("users").doc(user.uid).collection("history")
+        .where("month", "==", month).where("year", "==", year).get();
+
+      if (!existing.empty) {
+        alert("⚠️ Los datos de este mes ya están guardados.");
+        return;
+      }
+
+      await db.collection("users").doc(user.uid).collection("history").add({
+        month, year, income: totalIncomeVal, expenses: totalExpensesVal, balance,
+        timestamp: new Date().toISOString(),
+      });
+
+      await loadHistory();
+    } catch (err) {
+      console.error("❌ Error saving history:", err);
+    }
+  });
+}
+
 
 /* ==============================
-   🧾 NOTAS
+   🧾 NOTAS (Firestore)
    ============================== */
 
 const saveNoteBtn = document.getElementById("saveNote");
 const noteText = document.getElementById("noteText");
 const savedNotesDiv = document.getElementById("savedNotes");
 
-let notes = JSON.parse(localStorage.getItem("notes")) || [];
-
-function renderNotes() {
+function renderNotes(notes) {
   if (!savedNotesDiv) return;
   savedNotesDiv.innerHTML = "";
-  notes.forEach((note, index) => {
+  notes.forEach((note) => {
     const div = document.createElement("div");
     div.className = "note";
     div.innerHTML = `
       <p>${note.text}</p>
       <small style="color:#aaa;">${note.date}</small>
-      <button class="delete-btn" onclick="deleteNote(${index})">🗑️ Eliminar</button>
+      <button class="delete-btn" onclick="deleteNote('${note.id}')">🗑️ Eliminar</button>
     `;
     savedNotesDiv.appendChild(div);
   });
 }
 
-function deleteNote(index) {
-  notes.splice(index, 1);
-  localStorage.setItem("notes", JSON.stringify(notes));
-  renderNotes();
+async function loadNotes() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    const snapshot = await db.collection("users").doc(user.uid).collection("notes")
+      .orderBy("timestamp", "desc").get();
+    const notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderNotes(notes);
+  } catch (err) {
+    console.error("❌ Error loading notes:", err);
+  }
+}
+
+async function deleteNote(docId) {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await db.collection("users").doc(user.uid).collection("notes").doc(docId).delete();
+    await loadNotes();
+  } catch (err) {
+    console.error("❌ Error deleting note:", err);
+  }
 }
 
 if (saveNoteBtn) {
-  saveNoteBtn.addEventListener("click", () => {
+  saveNoteBtn.addEventListener("click", async () => {
     const text = noteText.value.trim();
     if (!text) {
       alert("⚠️ Escribe algo antes de guardar.");
       return;
     }
-    notes.push({ text, date: new Date().toLocaleString() });
-    localStorage.setItem("notes", JSON.stringify(notes));
-    noteText.value = "";
-    renderNotes();
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+      await db.collection("users").doc(user.uid).collection("notes").add({
+        text,
+        date: new Date().toLocaleString(),
+        timestamp: new Date().toISOString(),
+      });
+      noteText.value = "";
+      await loadNotes();
+    } catch (err) {
+      console.error("❌ Error saving note:", err);
+    }
   });
 }
-
-renderNotes();
 
 /* ==============================
    📰 MÓDULO DE NOTICIAS
