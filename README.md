@@ -31,7 +31,7 @@ La aplicación permite al usuario:
 - **CoinGecko API** — precios de criptomonedas
 - **TwelveData API** — precios de ETFs e índices bursátiles
 - **NewsData.io API** — noticias del mercado financiero
-- **localStorage** — almacenamiento local para preferencias de configuración (día de cobro) y caché de datos de sesión
+- **localStorage** — caché de sesión para datos ya sincronizados con Firestore (rendimiento de gráficos)
 
 ---
 
@@ -133,11 +133,11 @@ La limitación principal es que la URL no cambia al navegar entre secciones y el
 
 ### ¿Por qué localStorage en algunas partes?
 
-El proyecto usa Firestore para todos los datos del usuario (gastos, ingresos, notas e historial mensual) y localStorage únicamente para preferencias de configuración y caché de sesión.
+Firestore es la fuente de verdad para todos los datos del usuario: gastos, ingresos, notas, historial mensual y preferencias (día de cobro). localStorage actúa únicamente como caché de rendimiento.
 
-- **El día de cobro es una preferencia local** que no necesita sincronización entre dispositivos.
-- **localStorage actúa como caché de rendimiento.** Al cargar los gastos desde Firestore, se guardan también en localStorage para que los gráficos puedan acceder a ellos de forma inmediata sin esperar nuevas llamadas a la base de datos.
-- **Notas e historial mensual están en Firestore**, lo que garantiza que el usuario accede a sus datos desde cualquier dispositivo.
+- **Al cargar los gastos desde Firestore**, se guardan también en localStorage para que los gráficos puedan leerlos de forma inmediata sin lanzar nuevas peticiones a la base de datos.
+- **El día de cobro se guarda en Firestore** y se replica en localStorage como caché, de modo que el cálculo de días restantes hasta la nómina está disponible al instante sin esperar la respuesta de la red.
+- Si el usuario entra desde otro dispositivo, todos sus datos se cargan desde Firestore en el momento del login.
 
 ---
 

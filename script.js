@@ -358,6 +358,15 @@ auth.onAuthStateChanged(async (user) => {
         totalIncome = incomeTotal;
       }
 
+      // Cargar preferencias de usuario desde Firestore
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      if (userDoc.exists && userDoc.data().payday) {
+        const savedPayday = userDoc.data().payday;
+        localStorage.setItem("payday", savedPayday);
+        const paydayDisplay = document.getElementById("paydayDisplay");
+        if (paydayDisplay) paydayDisplay.textContent = savedPayday;
+      }
+
       updateBalanceDisplay();
       updateExpensesChart();
       loadNotes();
@@ -550,7 +559,7 @@ window.addEventListener("load", () => {
   const savePaydayBtn = document.getElementById("savePayday");
   const paydayInput = document.getElementById("paydayInput");
   if (savePaydayBtn && paydayInput) {
-    savePaydayBtn.addEventListener("click", () => {
+    savePaydayBtn.addEventListener("click", async () => {
       const newDay = parseInt(paydayInput.value);
       if (isNaN(newDay) || newDay < 1 || newDay > 31) {
         alert("⚠️ Introduce un día válido entre 1 y 31.");
@@ -560,6 +569,15 @@ window.addEventListener("load", () => {
       localStorage.setItem("payday", payday);
       if (paydayDisplay) paydayDisplay.textContent = payday;
       paydayInput.value = "";
+
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          await db.collection("users").doc(user.uid).set({ payday }, { merge: true });
+        } catch (err) {
+          console.error("❌ Error saving payday:", err);
+        }
+      }
     });
   }
 
