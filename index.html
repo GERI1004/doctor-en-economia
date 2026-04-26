@@ -29,13 +29,14 @@
   <header>
     <h1>Doctor en Economía 💼</h1>
     <p>Tu panel de finanzas personales</p>
+    <p id="headerBalance" class="header-balance"></p>
   </header>
 
   <nav id="mainNav">
     <a href="#context">🕒 Contexto</a>
     <a href="#expenses">💸 Gastos</a>
     <a href="#balance">💰 Balance</a>
-    <a href="#portfolio">🥧 Distribución</a>
+    <a href="#portfolio">📊 Presupuesto</a>
     <a href="#market">📈 Mercado</a>
     <a href="#summary">🧠 Análisis</a>
     <a href="#news">📰 Noticias</a>
@@ -75,15 +76,28 @@
       <h2>💸 Control de gastos</h2>
       <input type="text" id="expenseDesc" placeholder="Descripción">
       <input type="number" id="expenseAmount" placeholder="Importe (DKK)">
+      <select id="expenseCategory">
+        <option value="Alimentación">🛒 Alimentación</option>
+        <option value="Transporte">🚗 Transporte</option>
+        <option value="Ocio">🎮 Ocio</option>
+        <option value="Salud">🏥 Salud</option>
+        <option value="Otros">📦 Otros</option>
+      </select>
       <button id="addExpense">Añadir gasto</button>
       <ul id="expenseList"></ul>
       <h3>Total mes actual: <span id="total">0</span> DKK</h3>
     </section>
 
-    <!-- Distribución del presupuesto -->
+    <!-- Presupuesto mensual -->
     <section id="portfolio">
-      <h2>🥧 Distribución del presupuesto</h2>
-      <canvas id="portfolioChart" width="400" height="400"></canvas>
+      <h2>📊 Presupuesto del mes</h2>
+      <div id="budgetProgress">
+        <p id="budgetText">Añade tus ingresos para ver el progreso del mes.</p>
+        <div class="progress-bar-container">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <p id="budgetDetail"></p>
+      </div>
     </section>
 
     <!-- Notes -->
@@ -111,7 +125,7 @@
           <p>🏦 Ahorro acumulado: <strong><span id="cumulativeSavings">0</span> DKK</strong></p>
         </div>
       </div>
-      <h3>📊 Resumen mensual</h3>
+      <h3>📊 Gastos por categoría este mes</h3>
       <canvas id="expensesChart" width="400" height="250"></canvas>
     </section>
 

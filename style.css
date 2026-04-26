@@ -147,6 +147,13 @@ header p {
   opacity: 0.85;
 }
 
+.header-balance {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 1 !important;
+}
+
 /* ================================
    NAVBAR
    ================================ */
@@ -257,10 +264,51 @@ section h2 {
 
 #expenseList li {
   background: #161b22;
-  padding: 10px;
+  padding: 10px 12px;
   margin-bottom: 10px;
   border-radius: 8px;
   border-left: 4px solid #00d084;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.expense-info { flex: 1; font-size: 0.95rem; }
+
+.expense-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.cat-badge {
+  font-size: 0.72rem;
+  background: #00d08420;
+  color: #00d084;
+  border: 1px solid #00d08450;
+  border-radius: 12px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  background: none;
+  border: 1px solid #00d084;
+  color: #00d084;
+  font-size: 0.8rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.edit-btn:hover { background: #00d08420; }
+
+#expenses select {
+  padding: 10px;
+  background: #1b1f2a;
+  color: white;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 10px;
 }
 
 .delete-btn {
@@ -277,24 +325,41 @@ section h2 {
   color: #ff7b7b;
 }
 
-/* PORTFOLIO CHART */
+/* BUDGET PROGRESS */
 #portfolio {
   background: #161b22;
   border: 1px solid #00d08440;
   border-radius: 12px;
   padding: 20px;
   margin-top: 30px;
-  text-align: center;
 }
 
-#portfolio canvas {
-  max-width: 280px;
-  max-height: 280px;
-  margin: 0 auto;
-  display: block;
-  background: #0d1117;
-  border-radius: 50%;
-  box-shadow: 0 0 15px #00d08430;
+#budgetText {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: #e0e0e0;
+}
+
+#budgetDetail {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-top: 8px;
+}
+
+.progress-bar-container {
+  background: #1b1f2a;
+  border-radius: 20px;
+  height: 22px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 20px;
+  width: 0%;
+  transition: width 0.5s ease, background 0.5s ease;
+  background: #00d084;
 }
 
 /* ================================

@@ -134,16 +134,25 @@ const expenseAmount = document.getElementById("expenseAmount");
 const expenseList = document.getElementById("expenseList");
 const totalDisplay = document.getElementById("total");
 
-function renderExpenseItem(docId, desc, amount) {
-  return `${desc}: ${amount.toFixed(2)} DKK
-    <button class="delete-btn" style="color:#00d084;" onclick="editExpense('${docId}')">✏️ Editar</button>
-    <button class="delete-btn" onclick="deleteExpense('${docId}')">🗑️ Eliminar</button>`;
+function renderExpenseItem(docId, desc, amount, category) {
+  const cat = category || "Otros";
+  return `
+    <span class="expense-info">
+      <span class="cat-badge">${cat}</span>
+      ${desc}: <strong>${amount.toFixed(2)} DKK</strong>
+    </span>
+    <span class="expense-actions">
+      <button class="edit-btn" onclick="editExpense('${docId}')">✏️ Editar</button>
+      <button class="delete-btn" onclick="deleteExpense('${docId}')">🗑️ Eliminar</button>
+    </span>`;
 }
 
 if (addExpenseBtn) {
   addExpenseBtn.addEventListener("click", async () => {
     const desc = expenseDesc.value.trim();
     const amount = parseFloat(expenseAmount.value);
+    const categorySelect = document.getElementById("expenseCategory");
+    const category = categorySelect ? categorySelect.value : "Otros";
 
     if (!desc || isNaN(amount) || amount <= 0) {
       alert("⚠️ Introduce una descripción y un importe válidos.");
@@ -160,20 +169,21 @@ if (addExpenseBtn) {
       const docRef = await db.collection("users").doc(user.uid).collection("expenses").add({
         description: desc,
         amount: amount,
+        category: category,
         date: new Date().toISOString(),
       });
 
-      // Mostrar en la lista con botones de editar y eliminar
       const li = document.createElement("li");
       li.dataset.id = docRef.id;
       li.dataset.description = desc;
       li.dataset.amount = amount;
-      li.innerHTML = renderExpenseItem(docRef.id, desc, amount);
+      li.dataset.category = category;
+      li.innerHTML = renderExpenseItem(docRef.id, desc, amount, category);
       expenseList.appendChild(li);
 
       // Actualizar localStorage para gráfico y totales
       const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
-      expensesData.push({ id: docRef.id, amount, date: new Date().toISOString() });
+      expensesData.push({ id: docRef.id, amount, date: new Date().toISOString(), category });
       localStorage.setItem("expenses", JSON.stringify(expensesData));
 
       const prevTotal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
@@ -282,7 +292,7 @@ async function saveExpenseEdit(docId) {
     // Actualizar el <li> con los nuevos datos
     li.dataset.description = newDesc;
     li.dataset.amount = newAmount;
-    li.innerHTML = renderExpenseItem(docId, newDesc, newAmount);
+    li.innerHTML = renderExpenseItem(docId, newDesc, newAmount, li.dataset.category);
 
     updateBalanceDisplay();
     updateExpensesChart();
@@ -296,7 +306,7 @@ async function saveExpenseEdit(docId) {
 function cancelEdit(docId) {
   const li = document.querySelector(`li[data-id="${docId}"]`);
   if (!li) return;
-  li.innerHTML = renderExpenseItem(docId, li.dataset.description, parseFloat(li.dataset.amount));
+  li.innerHTML = renderExpenseItem(docId, li.dataset.description, parseFloat(li.dataset.amount), li.dataset.category);
 }
 
 // Cargar gastos al iniciar sesión
@@ -330,14 +340,15 @@ auth.onAuthStateChanged(async (user) => {
         const data = docSnap.data();
         const expDate = new Date(data.date);
 
-        expensesData.push({ id: docSnap.id, amount: data.amount, date: data.date });
+        expensesData.push({ id: docSnap.id, amount: data.amount, date: data.date, category: data.category });
 
         if (expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear) {
           const li = document.createElement("li");
           li.dataset.id = docSnap.id;
           li.dataset.description = data.description;
           li.dataset.amount = data.amount;
-          li.innerHTML = renderExpenseItem(docSnap.id, data.description, data.amount);
+          li.dataset.category = data.category || "Otros";
+          li.innerHTML = renderExpenseItem(docSnap.id, data.description, data.amount, data.category);
           expenseList.appendChild(li);
           total += data.amount;
         }
@@ -376,6 +387,7 @@ auth.onAuthStateChanged(async (user) => {
         if (paydayDisplay) paydayDisplay.textContent = savedPayday;
       }
 
+      await checkAndAutoSavePreviousMonth(user.uid);
       updateBalanceDisplay();
       updateExpensesChart();
       loadIncomeList();
@@ -404,7 +416,6 @@ const currentBalanceDisplay = document.getElementById("currentBalance");
 
 let totalIncome = parseFloat(localStorage.getItem("totalIncome")) || 0;
 let totalExpenses = parseFloat(localStorage.getItem("totalExpenses")) || 0;
-let portfolioChartInstance = null;
 
 updateBalanceDisplay();
 
@@ -485,6 +496,50 @@ async function deleteIncome(docId, amount) {
   }
 }
 
+async function checkAndAutoSavePreviousMonth(uid) {
+  const now = new Date();
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonthName = prevDate.toLocaleString("es-ES", { month: "long" });
+  const prevYear = prevDate.getFullYear();
+  const prevMonth = prevDate.getMonth();
+
+  const existing = await db.collection("users").doc(uid).collection("history")
+    .where("month", "==", prevMonthName).where("year", "==", prevYear).get();
+  if (!existing.empty) return;
+
+  const [expSnap, incSnap] = await Promise.all([
+    db.collection("users").doc(uid).collection("expenses").get(),
+    db.collection("users").doc(uid).collection("income").get(),
+  ]);
+
+  let prevExpenses = 0;
+  expSnap.forEach(doc => {
+    const d = new Date(doc.data().date);
+    if (d.getMonth() === prevMonth && d.getFullYear() === prevYear)
+      prevExpenses += doc.data().amount;
+  });
+
+  let prevIncome = 0;
+  incSnap.forEach(doc => {
+    const d = new Date(doc.data().date);
+    if (d.getMonth() === prevMonth && d.getFullYear() === prevYear)
+      prevIncome += doc.data().amount;
+  });
+
+  if (prevIncome === 0 && prevExpenses === 0) return;
+
+  await db.collection("users").doc(uid).collection("history").add({
+    month: prevMonthName,
+    year: prevYear,
+    income: prevIncome,
+    expenses: prevExpenses,
+    balance: prevIncome - prevExpenses,
+    timestamp: prevDate.toISOString(),
+    auto: true,
+  });
+  console.log(`✅ Mes anterior (${prevMonthName} ${prevYear}) guardado automáticamente.`);
+}
+
 async function loadCumulativeSavings() {
   const user = auth.currentUser;
   if (!user) return;
@@ -511,12 +566,28 @@ function updateBalanceDisplay() {
 
   if (totalIncomeDisplay) totalIncomeDisplay.textContent = totalIncome.toFixed(2);
   if (totalExpensesDisplay) totalExpensesDisplay.textContent = totalExpenses.toFixed(2);
-  if (currentBalanceDisplay) currentBalanceDisplay.textContent = currentBalance.toFixed(2);
-  updatePortfolioChart();
+  if (currentBalanceDisplay) {
+    currentBalanceDisplay.textContent = currentBalance.toFixed(2);
+    currentBalanceDisplay.style.color = currentBalance >= 0 ? "#00d084" : "#ff4d4d";
+  }
+
+  const headerBalance = document.getElementById("headerBalance");
+  if (headerBalance) {
+    if (totalIncome > 0) {
+      headerBalance.textContent = currentBalance >= 0
+        ? `💚 Balance del mes: +${currentBalance.toFixed(2)} DKK`
+        : `🔴 Balance del mes: ${currentBalance.toFixed(2)} DKK`;
+      headerBalance.style.color = currentBalance >= 0 ? "#00d084" : "#ff4d4d";
+    } else {
+      headerBalance.textContent = "";
+    }
+  }
+
+  updateProgressBar();
 }
 
 // ===========================================
-// 📊 GRÁFICO DE GASTOS MENSUALES
+// 📊 GRÁFICO DE GASTOS POR CATEGORÍA
 // ===========================================
 let expensesChartInstance = null;
 
@@ -526,22 +597,28 @@ function updateExpensesChart() {
 
   const ctx = canvas.getContext("2d");
   const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
-  const monthlyTotals = {};
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const categoryTotals = {};
 
   expensesData.forEach((exp) => {
     if (!exp.date) return;
-    const date = new Date(exp.date);
-    const month = `${date.toLocaleString("es-ES", { month: "short" })} ${date.getFullYear()}`;
-    monthlyTotals[month] = (monthlyTotals[month] || 0) + exp.amount;
+    const d = new Date(exp.date);
+    if (d.getMonth() !== currentMonth || d.getFullYear() !== currentYear) return;
+    const cat = exp.category || "Otros";
+    categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
   });
 
-  const labels = Object.keys(monthlyTotals);
-  const values = Object.values(monthlyTotals);
+  const labels = Object.keys(categoryTotals);
+  const values = Object.values(categoryTotals);
 
   if (labels.length === 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     return;
   }
+
+  const colors = ["#00d084", "#4ecdc4", "#45b7d1", "#f7dc6f", "#e74c3c"];
 
   if (expensesChartInstance) expensesChartInstance.destroy();
 
@@ -549,75 +626,50 @@ function updateExpensesChart() {
     type: "bar",
     data: {
       labels,
-      datasets: [
-        {
-          label: "Gastos mensuales (DKK)",
-          data: values,
-          backgroundColor: "#00d08490",
-          borderColor: "#00d084",
-          borderWidth: 1,
-        },
-      ],
+      datasets: [{
+        label: "Gasto (DKK)",
+        data: values,
+        backgroundColor: labels.map((_, i) => colors[i % colors.length] + "90"),
+        borderColor: labels.map((_, i) => colors[i % colors.length]),
+        borderWidth: 1,
+      }],
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false },
-      },
+      plugins: { legend: { display: false } },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { color: "#ccc" },
-        },
-        x: {
-          ticks: { color: "#ccc" },
-        },
+        y: { beginAtZero: true, ticks: { color: "#ccc" } },
+        x: { ticks: { color: "#ccc" } },
       },
     },
   });
 }
 
 // ===========================================
-// 🥧 GRÁFICO DE PORTFOLIO (datos reales)
+// 📊 BARRA DE PROGRESO DEL PRESUPUESTO
 // ===========================================
-function updatePortfolioChart() {
-  const canvas = document.getElementById("portfolioChart");
-  if (!canvas) return;
-
+function updateProgressBar() {
   const totalIncomeVal = parseFloat(localStorage.getItem("totalIncome")) || 0;
   const totalExpensesVal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
-  const savings = Math.max(0, totalIncomeVal - totalExpensesVal);
-
-  const ctx = canvas.getContext("2d");
+  const bar = document.getElementById("progressBar");
+  const text = document.getElementById("budgetText");
+  const detail = document.getElementById("budgetDetail");
+  if (!bar || !text || !detail) return;
 
   if (totalIncomeVal === 0) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    text.textContent = "Añade tus ingresos para ver el progreso del mes.";
+    bar.style.width = "0%";
+    detail.textContent = "";
     return;
   }
 
-  if (portfolioChartInstance) portfolioChartInstance.destroy();
+  const pct = Math.min((totalExpensesVal / totalIncomeVal) * 100, 100);
+  const color = pct < 60 ? "#00d084" : pct < 90 ? "#f7dc6f" : "#ff4d4d";
 
-  portfolioChartInstance = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["Gastos", "Ahorro"],
-      datasets: [{
-        data: [totalExpensesVal, savings],
-        backgroundColor: ["#ff4d4d90", "#00d08490"],
-        borderColor: ["#ff4d4d", "#00d084"],
-        borderWidth: 2,
-      }],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          labels: { color: "#ccc" }
-        }
-      }
-    }
-  });
+  bar.style.width = `${pct.toFixed(1)}%`;
+  bar.style.background = color;
+  text.innerHTML = `Has usado el <strong style="color:${color}">${pct.toFixed(1)}%</strong> de tus ingresos este mes`;
+  detail.textContent = `${totalExpensesVal.toFixed(2)} DKK gastados de ${totalIncomeVal.toFixed(2)} DKK ingresados`;
 }
 
 /* ==============================
