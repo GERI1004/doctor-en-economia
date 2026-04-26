@@ -629,7 +629,6 @@ function updateExpensesChart() {
 
   expensesChartInstance = new Chart(ctx, {
     type: "bar",
-    indexAxis: "y",
     data: {
       labels,
       datasets: [{
@@ -642,6 +641,7 @@ function updateExpensesChart() {
       }],
     },
     options: {
+      indexAxis: "y",
       responsive: true,
       plugins: {
         legend: { display: false },
@@ -966,14 +966,14 @@ if (saveNoteBtn) {
 const newsFeed = document.getElementById("newsFeed");
 const loadNewsBtn = document.getElementById("loadNews");
 const newsApiKey = "pub_6561e61294f94e71ac555b551d6dc3b6";
-const newsQuery = "bitcoin OR ethereum OR ETF OR \"bolsa de valores\" OR inflacion OR \"tipos de interes\" OR \"reserva federal\" OR nasdaq OR \"mercados financieros\" OR inversion OR dividendos OR criptomonedas OR \"S&P 500\"";
+const newsQuery = "bitcoin OR ethereum OR ETF OR nasdaq OR inflation OR \"interest rates\" OR \"stock market\" OR investing OR cryptocurrency OR \"S&P 500\" OR dividends";
 
 async function loadMarketNews() {
   if (!newsFeed) return;
   newsFeed.innerHTML = "<p>Cargando noticias...</p>";
 
   try {
-    const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=en&category=business,top`;
+    const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=en`;
     const response = await fetch(url);
     const data = await response.json();
 
