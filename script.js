@@ -978,7 +978,7 @@ if (saveNoteBtn) {
 const newsFeed = document.getElementById("newsFeed");
 const loadNewsBtn = document.getElementById("loadNews");
 const newsApiKey = "pub_6561e61294f94e71ac555b551d6dc3b6";
-const newsQuery = "bitcoin OR ethereum OR ETF OR nasdaq OR inflation OR \"interest rates\" OR \"stock market\" OR investing OR cryptocurrency OR \"S&P 500\" OR dividends";
+const newsQuery = "bitcoin OR ethereum OR ETF OR nasdaq OR inflation OR investing OR crypto";
 
 async function loadMarketNews(forceRefresh = false) {
   if (!newsFeed) return;
