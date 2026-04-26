@@ -803,13 +803,22 @@ function updateSmartSummary() {
     summary += "<br><br>📚 <em>Consejo financiero: saber exactamente cuánto ganas al mes es el primer paso para controlar tu dinero. No puedes gestionar lo que no mides.</em>";
   } else {
     const expenseRatio = (totalExpensesVal / totalIncomeVal) * 100;
-    const dailyLimit = (currentBalance / (daysLeft || 1)).toFixed(2);
+
+    let paydayMsg = "";
+    if (daysLeft <= 0) {
+      paydayMsg = `📅 <strong>¡Hoy cobras!</strong> Balance actual: <strong>${currentBalance.toFixed(2)} DKK</strong>.<br>`;
+    } else if (daysLeft === 1) {
+      paydayMsg = `📅 <strong>¡Mañana cobras!</strong> Te quedan <strong>${currentBalance.toFixed(2)} DKK</strong>. Evita gastos innecesarios hoy.<br>`;
+    } else {
+      const balanceColor = currentBalance >= 0 ? "#00d084" : "#ff4d4d";
+      paydayMsg = `⏳ Quedan <strong>${daysLeft}</strong> días hasta tu próxima nómina.<br>
+      💼 Margen disponible hasta fin de ciclo: <strong style="color:${balanceColor}">${currentBalance.toFixed(2)} DKK</strong>.<br>`;
+    }
 
     summary = `
       💰 Has ingresado <strong>${totalIncomeVal.toFixed(2)} DKK</strong> este mes.<br>
       💸 Has gastado <strong>${totalExpensesVal.toFixed(2)} DKK</strong> (${expenseRatio.toFixed(1)}% de tus ingresos).<br>
-      ⏳ Quedan <strong>${daysLeft}</strong> días hasta tu próxima nómina.<br>
-      📊 Puedes gastar aproximadamente <strong>${dailyLimit} DKK/día</strong> para no pasarte del presupuesto.<br>
+      ${paydayMsg}
     `;
 
     if (expenseRatio < 60) {
@@ -1129,11 +1138,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (isLoginMode) {
-        await auth.signInWithEmailAndPassword(email, password);
-        loginStatus.textContent = `✅ Bienvenido/a de nuevo, ${email}`;
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        if (!cred.user.emailVerified) {
+          loginStatus.style.color = "#f7dc6f";
+          loginStatus.textContent = "⚠️ Tu email no está verificado. Revisa tu bandeja de entrada.";
+        } else {
+          loginStatus.textContent = `✅ Bienvenido/a de nuevo, ${email}`;
+        }
       } else {
-        await auth.createUserWithEmailAndPassword(email, password);
-        loginStatus.textContent = "✅ ¡Cuenta creada correctamente!";
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await cred.user.sendEmailVerification();
+        loginStatus.style.color = "#00d084";
+        loginStatus.textContent = "✅ Cuenta creada. Te hemos enviado un email de verificación — revisa tu bandeja de entrada antes de continuar.";
+        await auth.signOut();
+        isLoginMode = true;
+        nameInput.classList.add("hidden");
+        actionBtn.textContent = "Iniciar sesión";
+        document.getElementById("formTitle").textContent = "Inicia sesión en Doctor en Economía";
+        toggleMode.textContent = "¿No tienes cuenta? Créala aquí";
       }
     } catch (error) {
       const mensajesError = {
