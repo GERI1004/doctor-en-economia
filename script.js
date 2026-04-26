@@ -394,6 +394,7 @@ auth.onAuthStateChanged(async (user) => {
       loadNotes();
       loadHistory();
       loadCumulativeSavings();
+      loadMarketNews();
     } catch (err) {
       console.error("❌ Error loading data:", err);
     }
@@ -611,56 +612,68 @@ function updateExpensesChart() {
     categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
   });
 
-  const chartTitle = document.querySelector("#balance h3");
-  if (chartTitle) chartTitle.textContent = `📊 Gastos por categoría — ${monthName}`;
+  const titleEl = document.getElementById("categoryChartTitle");
+  if (titleEl) titleEl.textContent = `📊 Gastos por categoría — ${monthName}`;
 
   const labels = Object.keys(categoryTotals);
   const values = Object.values(categoryTotals);
   const total = values.reduce((a, b) => a + b, 0);
+  const legendEl = document.getElementById("categoryLegend");
+  const colors = ["#00d084", "#4ecdc4", "#45b7d1", "#f7dc6f", "#e74c3c"];
 
   if (labels.length === 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (legendEl) legendEl.innerHTML = "<p style='color:#aaa;font-size:0.88rem'>Sin gastos registrados este mes.</p>";
     return;
   }
-
-  const colors = ["#00d084", "#4ecdc4", "#45b7d1", "#f7dc6f", "#e74c3c"];
 
   if (expensesChartInstance) expensesChartInstance.destroy();
 
   expensesChartInstance = new Chart(ctx, {
-    type: "bar",
+    type: "doughnut",
     data: {
       labels,
       datasets: [{
-        label: "DKK",
         data: values,
-        backgroundColor: labels.map((_, i) => colors[i % colors.length] + "cc"),
-        borderColor: labels.map((_, i) => colors[i % colors.length]),
-        borderWidth: 1,
-        borderRadius: 6,
+        backgroundColor: labels.map((_, i) => colors[i % colors.length] + "dd"),
+        borderColor: "#0e1117",
+        borderWidth: 3,
+        hoverOffset: 10,
       }],
     },
     options: {
-      indexAxis: "y",
       responsive: true,
+      cutout: "68%",
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => {
-              const val = ctx.parsed.x;
+            label: (item) => {
+              const val = item.parsed;
               const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
               return `  ${val.toFixed(2)} DKK (${pct}%)`;
             },
           },
         },
       },
-      scales: {
-        x: { beginAtZero: true, ticks: { color: "#ccc" }, grid: { color: "#ffffff10" } },
-        y: { ticks: { color: "#e0e0e0", font: { size: 13 } } },
-      },
     },
   });
+
+  if (legendEl) {
+    legendEl.innerHTML = "";
+    labels.forEach((cat, i) => {
+      const pct = total > 0 ? ((values[i] / total) * 100).toFixed(1) : 0;
+      const item = document.createElement("div");
+      item.className = "legend-item";
+      item.innerHTML = `
+        <span class="legend-dot" style="background:${colors[i % colors.length]}"></span>
+        <span style="flex:1"><strong>${cat}</strong></span>
+        <span>${values[i].toFixed(2)} DKK</span>
+        <span class="legend-pct">${pct}%</span>
+      `;
+      legendEl.appendChild(item);
+    });
+  }
 }
 
 // ===========================================
@@ -975,48 +988,79 @@ async function loadMarketNews() {
   try {
     const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=en`;
     const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    if (!data.results || data.results.length === 0) {
+    if (data.status !== "success" || !data.results || data.results.length === 0) {
       newsFeed.innerHTML = "<p>No se han encontrado noticias recientes.</p>";
       return;
     }
 
     newsFeed.innerHTML = "";
+
     data.results.slice(0, 9).forEach(article => {
-      const date = article.pubDate
-        ? new Date(article.pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
-        : "";
-      const source = article.source_id
-        ? article.source_id.replace(/-/g, " ").toUpperCase()
-        : "Fuente desconocida";
-      const desc = article.description
-        ? article.description.slice(0, 160) + (article.description.length > 160 ? "…" : "")
-        : "";
-      const imgHtml = article.image_url
-        ? `<img src="${article.image_url}" alt="" class="news-img" onerror="this.style.display='none'">`
+      if (!article.title || !article.link) return;
+
+      const card = document.createElement("div");
+      card.className = "news-card";
+
+      if (article.image_url) {
+        const img = document.createElement("img");
+        img.src = article.image_url;
+        img.className = "news-img";
+        img.alt = "";
+        img.onerror = () => img.remove();
+        card.appendChild(img);
+      }
+
+      const content = document.createElement("div");
+      content.className = "news-content";
+
+      const meta = document.createElement("div");
+      meta.className = "news-meta";
+
+      const source = document.createElement("span");
+      source.className = "news-source";
+      source.textContent = (article.source_id || "").replace(/-/g, " ").toUpperCase();
+
+      const dateEl = document.createElement("span");
+      dateEl.className = "news-date";
+      dateEl.textContent = article.pubDate
+        ? "📅 " + new Date(article.pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
         : "";
 
-      const div = document.createElement("div");
-      div.classList.add("news-card");
-      div.innerHTML = `
-        ${imgHtml}
-        <div class="news-content">
-          <div class="news-meta">
-            <span class="news-source">${source}</span>
-            <span class="news-date">📅 ${date}</span>
-          </div>
-          <h3 class="news-title">${article.title}</h3>
-          ${desc ? `<p class="news-desc">${desc}</p>` : ""}
-          <a href="${article.link}" target="_blank" rel="noopener" class="news-btn">Leer artículo →</a>
-        </div>
-      `;
-      newsFeed.appendChild(div);
+      meta.appendChild(source);
+      meta.appendChild(dateEl);
+
+      const titleEl = document.createElement("h3");
+      titleEl.className = "news-title";
+      titleEl.textContent = article.title;
+
+      const btn = document.createElement("a");
+      btn.href = article.link;
+      btn.target = "_blank";
+      btn.rel = "noopener";
+      btn.className = "news-btn";
+      btn.textContent = "Leer artículo →";
+
+      content.appendChild(meta);
+      content.appendChild(titleEl);
+
+      if (article.description) {
+        const desc = document.createElement("p");
+        desc.className = "news-desc";
+        desc.textContent = article.description.slice(0, 160) + (article.description.length > 160 ? "…" : "");
+        content.appendChild(desc);
+      }
+
+      content.appendChild(btn);
+      card.appendChild(content);
+      newsFeed.appendChild(card);
     });
 
   } catch (error) {
     console.error("❌ Error loading news:", error);
-    newsFeed.innerHTML = "<p>⚠️ Error al cargar las noticias. Inténtalo de nuevo más tarde.</p>";
+    newsFeed.innerHTML = `<p>⚠️ Error al cargar las noticias: ${error.message}</p>`;
   }
 }
 

@@ -125,8 +125,11 @@
           <p>🏦 Ahorro acumulado: <strong><span id="cumulativeSavings">0</span> DKK</strong></p>
         </div>
       </div>
-      <h3>📊 Gastos por categoría este mes</h3>
-      <canvas id="expensesChart" width="400" height="250"></canvas>
+      <h3 id="categoryChartTitle">📊 Gastos por categoría este mes</h3>
+      <div class="chart-wrapper">
+        <canvas id="expensesChart" width="240" height="240"></canvas>
+        <div id="categoryLegend"></div>
+      </div>
     </section>
 
     <!-- Resumen inteligente -->
