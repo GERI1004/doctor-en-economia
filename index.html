@@ -99,14 +99,16 @@
       <h2>💰 Balance real</h2>
       <div class="balance-container">
         <div>
-          <label for="income">💵 Añadir ingreso:</label>
+          <label for="income">💵 Añadir ingreso del mes:</label>
           <input type="number" id="income" placeholder="Importe (DKK)">
           <button id="addIncome">Añadir</button>
+          <ul id="incomeList"></ul>
         </div>
         <div class="balance-info">
-          <p>Ingresos totales: <strong><span id="totalIncome">0</span> DKK</strong></p>
-          <p>Gastos totales: <strong><span id="totalExpenses">0</span> DKK</strong></p>
-          <h3>💎 Balance actual: <span id="currentBalance">0</span> DKK</h3>
+          <p>Ingresos este mes: <strong><span id="totalIncome">0</span> DKK</strong></p>
+          <p>Gastos este mes: <strong><span id="totalExpenses">0</span> DKK</strong></p>
+          <h3>💎 Balance del mes: <span id="currentBalance">0</span> DKK</h3>
+          <p>🏦 Ahorro acumulado: <strong><span id="cumulativeSavings">0</span> DKK</strong></p>
         </div>
       </div>
       <h3>📊 Resumen mensual</h3>

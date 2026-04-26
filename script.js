@@ -378,8 +378,10 @@ auth.onAuthStateChanged(async (user) => {
 
       updateBalanceDisplay();
       updateExpensesChart();
+      loadIncomeList();
       loadNotes();
       loadHistory();
+      loadCumulativeSavings();
     } catch (err) {
       console.error("❌ Error loading data:", err);
     }
@@ -426,15 +428,80 @@ if (addIncomeBtn) {
         date: new Date().toISOString(),
       });
 
-      totalIncome += amount;
-      localStorage.setItem("totalIncome", totalIncome);
       incomeInput.value = "";
-      updateBalanceDisplay();
+      await loadIncomeList();
     } catch (error) {
       console.error("❌ Error saving income:", error);
       alert("⚠️ Error al guardar el ingreso. Inténtalo de nuevo.");
     }
   });
+}
+
+async function loadIncomeList() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  try {
+    const snapshot = await db.collection("users").doc(user.uid).collection("income").get();
+    const incomeList = document.getElementById("incomeList");
+    if (!incomeList) return;
+
+    incomeList.innerHTML = "";
+    let incomeTotal = 0;
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const incDate = new Date(data.date);
+      if (incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear) {
+        incomeTotal += data.amount;
+        const li = document.createElement("li");
+        li.innerHTML = `${data.amount.toFixed(2)} DKK
+          <button class="delete-btn" onclick="deleteIncome('${docSnap.id}', ${data.amount})">🗑️ Eliminar</button>`;
+        incomeList.appendChild(li);
+      }
+    });
+
+    totalIncome = incomeTotal;
+    localStorage.setItem("totalIncome", incomeTotal);
+    updateBalanceDisplay();
+  } catch (err) {
+    console.error("❌ Error loading income:", err);
+  }
+}
+
+async function deleteIncome(docId, amount) {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await db.collection("users").doc(user.uid).collection("income").doc(docId).delete();
+    await loadIncomeList();
+  } catch (err) {
+    console.error("❌ Error deleting income:", err);
+    alert("⚠️ Error al eliminar el ingreso. Inténtalo de nuevo.");
+  }
+}
+
+async function loadCumulativeSavings() {
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    const snapshot = await db.collection("users").doc(user.uid).collection("history").get();
+    let cumulative = 0;
+    snapshot.forEach((docSnap) => {
+      cumulative += docSnap.data().balance || 0;
+    });
+    const el = document.getElementById("cumulativeSavings");
+    if (el) {
+      el.textContent = cumulative.toFixed(2);
+      el.style.color = cumulative >= 0 ? "#00d084" : "#ff4d4d";
+    }
+  } catch (err) {
+    console.error("❌ Error loading cumulative savings:", err);
+  }
 }
 
 function updateBalanceDisplay() {
@@ -744,6 +811,7 @@ if (saveMonthBtn) {
       });
 
       await loadHistory();
+      await loadCumulativeSavings();
     } catch (err) {
       console.error("❌ Error saving history:", err);
     }

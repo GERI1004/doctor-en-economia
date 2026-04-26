@@ -388,6 +388,21 @@ section h2 {
   background: #00a76b;
 }
 
+/* INCOME LIST */
+#incomeList {
+  list-style: none;
+  margin-top: 10px;
+}
+
+#incomeList li {
+  background: #161b22;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  border-left: 4px solid #00d084;
+  font-size: 0.95rem;
+}
+
 /* CONTEXT SECTION */
 #context {
   background: #161b22;
