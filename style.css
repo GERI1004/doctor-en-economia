@@ -513,9 +513,11 @@ section h2 {
   margin-top: 10px;
 }
 
-.chart-wrapper canvas {
-  max-width: 220px;
+.donut-container {
+  width: 200px;
+  height: 200px;
   flex-shrink: 0;
+  position: relative;
 }
 
 #categoryLegend {

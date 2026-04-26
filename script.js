@@ -6,7 +6,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   getCryptoData();
   getEtfData();
-  loadMarketNews();
 });
 
 /* ==============================
@@ -981,8 +980,18 @@ const loadNewsBtn = document.getElementById("loadNews");
 const newsApiKey = "pub_6561e61294f94e71ac555b551d6dc3b6";
 const newsQuery = "bitcoin OR ethereum OR ETF OR nasdaq OR inflation OR \"interest rates\" OR \"stock market\" OR investing OR cryptocurrency OR \"S&P 500\" OR dividends";
 
-async function loadMarketNews() {
+async function loadMarketNews(forceRefresh = false) {
   if (!newsFeed) return;
+
+  const CACHE_KEY = "newsCache";
+  const CACHE_TTL = 30 * 60 * 1000;
+  const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+
+  if (!forceRefresh && cached && Date.now() - cached.ts < CACHE_TTL) {
+    renderNews(cached.results);
+    return;
+  }
+
   newsFeed.innerHTML = "<p>Cargando noticias...</p>";
 
   try {
@@ -996,67 +1005,8 @@ async function loadMarketNews() {
       return;
     }
 
-    newsFeed.innerHTML = "";
-
-    data.results.slice(0, 9).forEach(article => {
-      if (!article.title || !article.link) return;
-
-      const card = document.createElement("div");
-      card.className = "news-card";
-
-      if (article.image_url) {
-        const img = document.createElement("img");
-        img.src = article.image_url;
-        img.className = "news-img";
-        img.alt = "";
-        img.onerror = () => img.remove();
-        card.appendChild(img);
-      }
-
-      const content = document.createElement("div");
-      content.className = "news-content";
-
-      const meta = document.createElement("div");
-      meta.className = "news-meta";
-
-      const source = document.createElement("span");
-      source.className = "news-source";
-      source.textContent = (article.source_id || "").replace(/-/g, " ").toUpperCase();
-
-      const dateEl = document.createElement("span");
-      dateEl.className = "news-date";
-      dateEl.textContent = article.pubDate
-        ? "📅 " + new Date(article.pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
-        : "";
-
-      meta.appendChild(source);
-      meta.appendChild(dateEl);
-
-      const titleEl = document.createElement("h3");
-      titleEl.className = "news-title";
-      titleEl.textContent = article.title;
-
-      const btn = document.createElement("a");
-      btn.href = article.link;
-      btn.target = "_blank";
-      btn.rel = "noopener";
-      btn.className = "news-btn";
-      btn.textContent = "Leer artículo →";
-
-      content.appendChild(meta);
-      content.appendChild(titleEl);
-
-      if (article.description) {
-        const desc = document.createElement("p");
-        desc.className = "news-desc";
-        desc.textContent = article.description.slice(0, 160) + (article.description.length > 160 ? "…" : "");
-        content.appendChild(desc);
-      }
-
-      content.appendChild(btn);
-      card.appendChild(content);
-      newsFeed.appendChild(card);
-    });
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), results: data.results.slice(0, 9) }));
+    renderNews(data.results.slice(0, 9));
 
   } catch (error) {
     console.error("❌ Error loading news:", error);
@@ -1064,7 +1014,72 @@ async function loadMarketNews() {
   }
 }
 
-if (loadNewsBtn) loadNewsBtn.addEventListener("click", loadMarketNews);
+function renderNews(articles) {
+  if (!newsFeed) return;
+  newsFeed.innerHTML = "";
+
+  articles.forEach(article => {
+    if (!article.title || !article.link) return;
+
+    const card = document.createElement("div");
+    card.className = "news-card";
+
+    if (article.image_url) {
+      const img = document.createElement("img");
+      img.src = article.image_url;
+      img.className = "news-img";
+      img.alt = "";
+      img.onerror = () => img.remove();
+      card.appendChild(img);
+    }
+
+    const content = document.createElement("div");
+    content.className = "news-content";
+
+    const meta = document.createElement("div");
+    meta.className = "news-meta";
+
+    const source = document.createElement("span");
+    source.className = "news-source";
+    source.textContent = (article.source_id || "").replace(/-/g, " ").toUpperCase();
+
+    const dateEl = document.createElement("span");
+    dateEl.className = "news-date";
+    dateEl.textContent = article.pubDate
+      ? "📅 " + new Date(article.pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+      : "";
+
+    meta.appendChild(source);
+    meta.appendChild(dateEl);
+
+    const titleEl = document.createElement("h3");
+    titleEl.className = "news-title";
+    titleEl.textContent = article.title;
+
+    const btn = document.createElement("a");
+    btn.href = article.link;
+    btn.target = "_blank";
+    btn.rel = "noopener";
+    btn.className = "news-btn";
+    btn.textContent = "Leer artículo →";
+
+    content.appendChild(meta);
+    content.appendChild(titleEl);
+
+    if (article.description) {
+      const desc = document.createElement("p");
+      desc.className = "news-desc";
+      desc.textContent = article.description.slice(0, 160) + (article.description.length > 160 ? "…" : "");
+      content.appendChild(desc);
+    }
+
+    content.appendChild(btn);
+    card.appendChild(content);
+    newsFeed.appendChild(card);
+  });
+}
+
+if (loadNewsBtn) loadNewsBtn.addEventListener("click", () => loadMarketNews(true));
 
 /* ==============================
    🔐 LOGIN REAL CON FIREBASE
