@@ -173,7 +173,7 @@ if (addExpenseBtn) {
 
       // Actualizar localStorage para gráfico y totales
       const expensesData = JSON.parse(localStorage.getItem("expenses")) || [];
-      expensesData.push({ id: docRef.id, amount });
+      expensesData.push({ id: docRef.id, amount, date: new Date().toISOString() });
       localStorage.setItem("expenses", JSON.stringify(expensesData));
 
       const prevTotal = parseFloat(localStorage.getItem("totalExpenses")) || 0;
@@ -318,31 +318,36 @@ auth.onAuthStateChanged(async (user) => {
         .collection("expenses")
         .get();
 
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
       expenseList.innerHTML = "";
       let total = 0;
       const expensesData = [];
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        const li = document.createElement("li");
-        li.dataset.id = docSnap.id;
-        li.dataset.description = data.description;
-        li.dataset.amount = data.amount;
-        li.innerHTML = renderExpenseItem(docSnap.id, data.description, data.amount);
-        expenseList.appendChild(li);
-        total += data.amount;
+        const expDate = new Date(data.date);
 
-        expensesData.push({
-          id: docSnap.id,
-          amount: data.amount,
-        });
+        expensesData.push({ id: docSnap.id, amount: data.amount, date: data.date });
+
+        if (expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear) {
+          const li = document.createElement("li");
+          li.dataset.id = docSnap.id;
+          li.dataset.description = data.description;
+          li.dataset.amount = data.amount;
+          li.innerHTML = renderExpenseItem(docSnap.id, data.description, data.amount);
+          expenseList.appendChild(li);
+          total += data.amount;
+        }
       });
 
       totalDisplay.textContent = total.toFixed(2);
       localStorage.setItem("totalExpenses", total);
       localStorage.setItem("expenses", JSON.stringify(expensesData));
 
-      // Cargar ingresos desde Firestore
+      // Cargar ingresos del mes actual desde Firestore
       const incomeSnapshot = await db
         .collection("users")
         .doc(user.uid)
@@ -352,7 +357,11 @@ auth.onAuthStateChanged(async (user) => {
       if (!incomeSnapshot.empty) {
         let incomeTotal = 0;
         incomeSnapshot.forEach((docSnap) => {
-          incomeTotal += docSnap.data().amount;
+          const data = docSnap.data();
+          const incDate = new Date(data.date);
+          if (incDate.getMonth() === currentMonth && incDate.getFullYear() === currentYear) {
+            incomeTotal += data.amount;
+          }
         });
         localStorage.setItem("totalIncome", incomeTotal);
         totalIncome = incomeTotal;
@@ -453,8 +462,9 @@ function updateExpensesChart() {
   const monthlyTotals = {};
 
   expensesData.forEach((exp) => {
-    const date = new Date(exp.id);
-    const month = date.toLocaleString("es-ES", { month: "short" });
+    if (!exp.date) return;
+    const date = new Date(exp.date);
+    const month = `${date.toLocaleString("es-ES", { month: "short" })} ${date.getFullYear()}`;
     monthlyTotals[month] = (monthlyTotals[month] || 0) + exp.amount;
   });
 
