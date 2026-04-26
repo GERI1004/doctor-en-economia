@@ -600,6 +600,7 @@ function updateExpensesChart() {
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
+  const monthName = now.toLocaleString("es-ES", { month: "long", year: "numeric" });
   const categoryTotals = {};
 
   expensesData.forEach((exp) => {
@@ -610,8 +611,12 @@ function updateExpensesChart() {
     categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
   });
 
+  const chartTitle = document.querySelector("#balance h3");
+  if (chartTitle) chartTitle.textContent = `📊 Gastos por categoría — ${monthName}`;
+
   const labels = Object.keys(categoryTotals);
   const values = Object.values(categoryTotals);
+  const total = values.reduce((a, b) => a + b, 0);
 
   if (labels.length === 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -624,22 +629,35 @@ function updateExpensesChart() {
 
   expensesChartInstance = new Chart(ctx, {
     type: "bar",
+    indexAxis: "y",
     data: {
       labels,
       datasets: [{
-        label: "Gasto (DKK)",
+        label: "DKK",
         data: values,
-        backgroundColor: labels.map((_, i) => colors[i % colors.length] + "90"),
+        backgroundColor: labels.map((_, i) => colors[i % colors.length] + "cc"),
         borderColor: labels.map((_, i) => colors[i % colors.length]),
         borderWidth: 1,
+        borderRadius: 6,
       }],
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const val = ctx.parsed.x;
+              const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+              return `  ${val.toFixed(2)} DKK (${pct}%)`;
+            },
+          },
+        },
+      },
       scales: {
-        y: { beginAtZero: true, ticks: { color: "#ccc" } },
-        x: { ticks: { color: "#ccc" } },
+        x: { beginAtZero: true, ticks: { color: "#ccc" }, grid: { color: "#ffffff10" } },
+        y: { ticks: { color: "#e0e0e0", font: { size: 13 } } },
       },
     },
   });
@@ -945,18 +963,18 @@ if (saveNoteBtn) {
    📰 MÓDULO DE NOTICIAS
    ============================== */
 
-const trackedAssets = ["RNDR", "AKT", "FET", "OCEAN", "AGIX", "BTC", "ETH", "S&P500"];
 const newsFeed = document.getElementById("newsFeed");
 const loadNewsBtn = document.getElementById("loadNews");
 const newsApiKey = "pub_6561e61294f94e71ac555b551d6dc3b6";
+const newsQuery = "bitcoin OR ethereum OR ETF OR \"bolsa de valores\" OR inflacion OR \"tipos de interes\" OR \"reserva federal\" OR nasdaq OR \"mercados financieros\" OR inversion OR dividendos OR criptomonedas OR \"S&P 500\"";
 
 async function loadMarketNews() {
   if (!newsFeed) return;
   newsFeed.innerHTML = "<p>Cargando noticias...</p>";
 
   try {
-    const query = trackedAssets.join(" OR ");
-    const response = await fetch(`https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(query)}&language=en`);
+    const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=es,en&prioritydomain=top`;
+    const response = await fetch(url);
     const data = await response.json();
 
     if (!data.results || data.results.length === 0) {
@@ -965,13 +983,33 @@ async function loadMarketNews() {
     }
 
     newsFeed.innerHTML = "";
-    data.results.slice(0, 10).forEach(article => {
+    data.results.slice(0, 9).forEach(article => {
+      const date = article.pubDate
+        ? new Date(article.pubDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+        : "";
+      const source = article.source_id
+        ? article.source_id.replace(/-/g, " ").toUpperCase()
+        : "Fuente desconocida";
+      const desc = article.description
+        ? article.description.slice(0, 160) + (article.description.length > 160 ? "…" : "")
+        : "";
+      const imgHtml = article.image_url
+        ? `<img src="${article.image_url}" alt="" class="news-img" onerror="this.style.display='none'">`
+        : "";
+
       const div = document.createElement("div");
-      div.classList.add("news-item");
+      div.classList.add("news-card");
       div.innerHTML = `
-        <h3>${article.title}</h3>
-        <p><a href="${article.link}" target="_blank">🔗 Leer más</a></p>
-        <p class="date">🕒 ${new Date(article.pubDate).toLocaleString()}</p>
+        ${imgHtml}
+        <div class="news-content">
+          <div class="news-meta">
+            <span class="news-source">${source}</span>
+            <span class="news-date">📅 ${date}</span>
+          </div>
+          <h3 class="news-title">${article.title}</h3>
+          ${desc ? `<p class="news-desc">${desc}</p>` : ""}
+          <a href="${article.link}" target="_blank" rel="noopener" class="news-btn">Leer artículo →</a>
+        </div>
       `;
       newsFeed.appendChild(div);
     });
