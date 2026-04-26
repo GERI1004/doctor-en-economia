@@ -973,7 +973,7 @@ async function loadMarketNews() {
   newsFeed.innerHTML = "<p>Cargando noticias...</p>";
 
   try {
-    const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=es,en&prioritydomain=top`;
+    const url = `https://newsdata.io/api/1/news?apikey=${newsApiKey}&q=${encodeURIComponent(newsQuery)}&language=en&category=business,top`;
     const response = await fetch(url);
     const data = await response.json();
 
